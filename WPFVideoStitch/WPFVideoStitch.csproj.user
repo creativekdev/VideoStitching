@@ -7,7 +7,27 @@
     </ApplicationDefinition>
   </ItemGroup>
   <ItemGroup>
+    <Compile Update="Render.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="VideoMerger.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="VideoSyncronization.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
     <Page Update="MainWindow.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Render.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="VideoMerger.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="VideoSyncronization.xaml">
       <SubType>Designer</SubType>
     </Page>
   </ItemGroup>

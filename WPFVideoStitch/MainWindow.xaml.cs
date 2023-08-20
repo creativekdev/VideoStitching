@@ -36,5 +36,24 @@ namespace WPFVideoStitch
 
             }
         }
+        private void Synchronization_Click(object sender, RoutedEventArgs e)
+        {
+            VideoSyncronization videoSyncronization = new VideoSyncronization();
+            videoSyncronization.Show();
+        }
+        private void Stitch_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+        private void Render_Click(object sender, RoutedEventArgs e)
+        {
+            Render render = new Render();
+            render.Show();
+        }
+        private void VideoMerger_Click(object sender, RoutedEventArgs e)
+        {
+            VideoMerger videoMerger = new VideoMerger();
+            videoMerger.Show();
+        }
     }
 }

@@ -1,0 +1,19 @@
+﻿<Window x:Class="WPFVideoStitch.Render"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:WPFVideoStitch"
+        mc:Ignorable="d"
+        Title="Render" Height="450" Width="800">
+    <Grid Margin="0,0,0,6">
+        <Border BorderBrush="Black" BorderThickness="1" HorizontalAlignment="Left" Height="104" Margin="22,66,0,0" VerticalAlignment="Top" Width="768">
+            <TextBox HorizontalAlignment="Left" Height="21" Margin="29,9,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="666"/>
+        </Border>
+        <Label Content="Output" HorizontalAlignment="Left" Margin="22,35,0,0" VerticalAlignment="Top" Width="54"/>
+        <Button Content="..." HorizontalAlignment="Left" Margin="720,77,0,0" VerticalAlignment="Top" Width="33"/>
+        <Button Content="Save" HorizontalAlignment="Left" Margin="564,113,0,0" VerticalAlignment="Top" Width="57"/>
+        <Button Content="Close" HorizontalAlignment="Left" Margin="669,113,0,0" VerticalAlignment="Top" Width="56" Height="20"/>
+
+    </Grid>
+</Window>

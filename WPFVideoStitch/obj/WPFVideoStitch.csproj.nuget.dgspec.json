@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "E:\\Work\\Germany\\Thomas\\WPFVideoStitch\\WPFVideoStitch\\WPFVideoStitch.csproj": {}
+    "E:\\Work\\Germany\\Thomas\\VideoStitching\\WPFVideoStitch\\WPFVideoStitch.csproj": {}
   },
   "projects": {
-    "E:\\Work\\Germany\\Thomas\\WPFVideoStitch\\WPFVideoStitch\\WPFVideoStitch.csproj": {
+    "E:\\Work\\Germany\\Thomas\\VideoStitching\\WPFVideoStitch\\WPFVideoStitch.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "E:\\Work\\Germany\\Thomas\\WPFVideoStitch\\WPFVideoStitch\\WPFVideoStitch.csproj",
+        "projectUniqueName": "E:\\Work\\Germany\\Thomas\\VideoStitching\\WPFVideoStitch\\WPFVideoStitch.csproj",
         "projectName": "WPFVideoStitch",
-        "projectPath": "E:\\Work\\Germany\\Thomas\\WPFVideoStitch\\WPFVideoStitch\\WPFVideoStitch.csproj",
+        "projectPath": "E:\\Work\\Germany\\Thomas\\VideoStitching\\WPFVideoStitch\\WPFVideoStitch.csproj",
         "packagesPath": "C:\\Users\\creative\\.nuget\\packages\\",
-        "outputPath": "E:\\Work\\Germany\\Thomas\\WPFVideoStitch\\WPFVideoStitch\\obj\\",
+        "outputPath": "E:\\Work\\Germany\\Thomas\\VideoStitching\\WPFVideoStitch\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "D:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -59,7 +59,7 @@
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
             },
-            "Microsoft.WindowsDesktop.App.WPF": {
+            "Microsoft.WindowsDesktop.App": {
               "privateAssets": "none"
             }
           },
