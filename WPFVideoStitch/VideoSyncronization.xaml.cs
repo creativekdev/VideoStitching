@@ -22,6 +22,7 @@ namespace WPFVideoStitch
         public VideoSyncronization()
         {
             InitializeComponent();
+
         }
     }
 }
