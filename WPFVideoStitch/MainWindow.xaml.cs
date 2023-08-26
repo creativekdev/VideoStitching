@@ -21,6 +21,8 @@ namespace WPFVideoStitch
     /// </summary>
     public partial class MainWindow : Window
     {
+        String rightVideo;
+        String leftVideo;
         public MainWindow()
         {
             InitializeComponent();
@@ -33,12 +35,29 @@ namespace WPFVideoStitch
             openFileDialog.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
             if (openFileDialog.ShowDialog() == true)
             {
-
+                int i = 0;
+                foreach (var file in openFileDialog.FileNames)
+                {
+                    i++;
+                    if (i == 1)
+                    {
+                        leftVideo = file;
+                        leftVideoCtl.Source = new Uri(leftVideo);
+                        leftVideoCtl.Play();
+                    }
+                    else if (i == 2)
+                    {
+                        rightVideo = file;
+                        rightVideoCtl.Source = new Uri(rightVideo);
+                        rightVideoCtl.Play();
+                    }
+                }
+                               
             }
         }
         private void Synchronization_Click(object sender, RoutedEventArgs e)
         {
-            VideoSyncronization videoSyncronization = new VideoSyncronization();
+            VideoSyncronization videoSyncronization = new VideoSyncronization(leftVideo, rightVideo);
             videoSyncronization.Show();
         }
         private void Stitch_Click(object sender, RoutedEventArgs e)

@@ -44,6 +44,20 @@
       "frameworks": {
         "net6.0-windows7.0": {
           "targetAlias": "net6.0-windows",
+          "dependencies": {
+            "IKVM": {
+              "target": "Package",
+              "version": "[8.6.2, )"
+            },
+            "NAudio": {
+              "target": "Package",
+              "version": "[2.2.0, )"
+            },
+            "NWaves": {
+              "target": "Package",
+              "version": "[0.9.6, )"
+            }
+          },
           "imports": [
             "net461",
             "net462",

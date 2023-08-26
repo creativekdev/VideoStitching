@@ -29,20 +29,39 @@
                 <TextBox  Grid.Column="1" Width="200" Margin="0 0 20 0" TextAlignment="Center" VerticalContentAlignment="Center"   Text="30.00s"/>
             </Grid>
             <Grid Grid.Row="1">
-                <Button Height="30" Margin="20 5" Content="Use Audio to sync Video"  ></Button>
+                <Button Height="30" Margin="20 5" Content="Use Audio to sync Video" Click="Syncronize_Click" ></Button>
             </Grid>
         </Grid>
         <Grid Grid.Row="3">
             <ListView  Height="200" Margin="0,10,0,0" 
-              VerticalAlignment="Top"  ItemsSource="{Binding dt}">
+              VerticalAlignment="Top" x:Name="listView">
                 <ListView.View>
-                    <GridView x:Name="GridView1">
-                        <GridViewColumn DisplayMemberBinding= "{Binding Path=Name}" 
-                                Header="Video" Width="100"/>
-                        <GridViewColumn DisplayMemberBinding= "{Binding Path=Drive}" 
-                                Header="Start Time" Width="100"/>
-                        <GridViewColumn DisplayMemberBinding= "{Binding Path=Drive}" 
-                                Header="Nearest frame" Width="200"/>
+                    
+                    <GridView>
+                        <GridViewColumn DisplayMemberBinding= "{Binding Path=Video}" 
+                                Header="Video" Width="200">
+                            <GridViewColumn.HeaderContainerStyle>
+                                <Style TargetType="{x:Type GridViewColumnHeader}">
+                                    <Setter Property="HorizontalContentAlignment" Value="Left" />
+                                </Style>
+                            </GridViewColumn.HeaderContainerStyle>
+                        </GridViewColumn>
+                        <GridViewColumn DisplayMemberBinding= "{Binding Path=StartTime}" 
+                                Header="Start Time" Width="100">
+                            <GridViewColumn.HeaderContainerStyle>
+                                <Style TargetType="{x:Type GridViewColumnHeader}">
+                                    <Setter Property="HorizontalContentAlignment" Value="Left" />
+                                </Style>
+                            </GridViewColumn.HeaderContainerStyle>
+                        </GridViewColumn>
+                        <GridViewColumn DisplayMemberBinding= "{Binding Path=NearestFrame}" 
+                                Header="Nearest frame" Width="100">
+                            <GridViewColumn.HeaderContainerStyle>
+                                <Style TargetType="{x:Type GridViewColumnHeader}">
+                                    <Setter Property="HorizontalContentAlignment" Value="Left" />
+                                </Style>
+                            </GridViewColumn.HeaderContainerStyle>
+                        </GridViewColumn>
                     </GridView>
                 </ListView.View>
             </ListView>

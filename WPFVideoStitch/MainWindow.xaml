@@ -45,8 +45,10 @@
                         Grid.Row="0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="150"/>
-                        <ColumnDefinition Width="50" />                        
+                        <ColumnDefinition Width="50" />
                         <ColumnDefinition Width="150"/>
+                        <ColumnDefinition Width="50" />
+                        <ColumnDefinition Width="150" />
                         <ColumnDefinition Width="50" />
                         <ColumnDefinition Width="150" />
                         <ColumnDefinition Width="50" />
@@ -59,9 +61,17 @@
                             Margin="10"                                
                             Click="VideoMerger_Click"
                             Content="Video Merge" />
-                    </Grid>                    
+                    </Grid>
                     <Grid
                             Grid.Column="2">
+                        <Button
+                            x:Name="ImportVideo"
+                            Margin="10"                                
+                            Click="Import_Videos"
+                            Content="Import Videos" />
+                    </Grid>
+                    <Grid
+                            Grid.Column="4">
                         <Button
                             x:Name="Synchronization"
                             Margin="10"                                
@@ -69,7 +79,7 @@
                             Content="Synchronization" />
                     </Grid>
                     <Grid
-                            Grid.Column="4">
+                            Grid.Column="6">
                         <Button
                             x:Name="Stitch"
                             Margin="10"
@@ -77,7 +87,7 @@
                             Content="Stitch" />
                     </Grid>
                     <Grid
-                            Grid.Column="6">
+                            Grid.Column="8">
                         <Button
                             x:Name="Render"
                             Margin="10"
@@ -112,10 +122,10 @@
                         Height="300"
                         BorderBrush="Black"
                         BorderThickness="2">
-                            <Image x:Name="webcamPreview" />
+                            <MediaElement x:Name="leftVideoCtl"  LoadedBehavior="Manual"  UnloadedBehavior="Stop" />
                         </Border>
                         <Slider Grid.Row="1" Width="300" VerticalAlignment="Center"/>
-                      
+
                     </Grid>
                     <Grid  Grid.Column="2">
                         <Grid.RowDefinitions>
@@ -128,7 +138,7 @@
                         Height="300"
                         BorderBrush="Black"
                         BorderThickness="2">
-                            <Image  />
+                            <MediaElement  x:Name="rightVideoCtl"  LoadedBehavior="Manual"  UnloadedBehavior="Stop"/>
                         </Border>
                         <Slider Grid.Row="1" Width="300" VerticalAlignment="Center"/>
 
@@ -144,14 +154,14 @@
                         Height="300"
                         BorderBrush="Black"
                         BorderThickness="2">
-                            <Image  />
+                            <MediaElement  x:Name="mergedVideoCtl"  LoadedBehavior="Manual"  UnloadedBehavior="Stop" />
                         </Border>
                         <Slider Grid.Row="1" Width="300" VerticalAlignment="Center"/>
 
                     </Grid>
 
                 </Grid>
-                
+
 
             </Grid>
 
