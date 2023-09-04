@@ -23,4 +23,15 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Emgu.CV.runtime.windows" Version="4.7.0.5276" />
+    <PackageReference Include="Emgu.CV.UI" Version="4.7.0.5276" />
+    <PackageReference Include="IKVM" Version="8.6.2" />
+    <PackageReference Include="NAudio" Version="2.2.0" />
+    <PackageReference Include="NWaves" Version="0.9.6" />
+    <PackageReference Include="OxyPlot.Core" Version="2.1.2" />
+    <PackageReference Include="OxyPlot.WindowsForms" Version="2.1.2" />
+    <PackageReference Include="OxyPlot.Wpf" Version="2.1.2" />
+  </ItemGroup>
+
 </Project>
