@@ -5,6 +5,9 @@ using System.Windows;
 using System.Diagnostics;
 using System.Windows.Interop;
 using System.IO;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 
 namespace WPFVideoStitch
 {
@@ -17,40 +20,17 @@ namespace WPFVideoStitch
         {
             InitializeComponent();
         }
-
-        private void Add_Videos(object sender, RoutedEventArgs e)
+        public class ThreadParameters
         {
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Multiselect = true;
-            openFileDialog.Filter = "Video files (*.mp4)|*.mp4|Video files (*.avi)|*.avi|All files (*.*)|*.*";
-            openFileDialog.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-            if (openFileDialog.ShowDialog() == true)
-            {
-                foreach (var filename in openFileDialog.FileNames)
-                {
-                    VideoPanel.Items.Add(filename);
-                }
-            }
+            public string outputFilename { get; set; }
+            public string outputPath { get; set; }
         }
-
-        private void Merge_Click(object sender, RoutedEventArgs e)
+        public void CallToChildThread(Object obj)
         {
-            //            string strCmdText = " -f concat -safe 0 -i videos.txt -c copy out.mp4";
-            if(VideoPanel.Items.Count == 0)
-            {
-                MessageBox.Show("Please select video files.", "Alert", MessageBoxButton.OK, MessageBoxImage.Information);
-                return;
-            }
-            File.WriteAllText("videos.txt", "");
-            foreach (var item in VideoPanel.Items)
-            {
-                File.AppendAllText("videos.txt", "file '" + item.ToString() +"'\n");
-            }
-            outputList.Items.Clear();
-            outputList.Items.Add("Merging...");
+            ThreadParameters threadParams = (ThreadParameters)obj;
 
             string command = "ffmpeg";
-            string arguments = " -f concat -safe 0 -i videos.txt -c copy \""+outputPath.Text+"/out.mp4\"";
+            string arguments = " -f concat -safe 0 -i videos.txt -c copy \"" + threadParams.outputPath + "/" + threadParams.outputFilename + "\"";
 
             var process = new Process();
 
@@ -80,13 +60,21 @@ namespace WPFVideoStitch
             catch (Exception ex)
             {
                 //                throw new Exception("OS error while executing " + Format(filename, arguments) + ": " + e.Message, e);
-                outputList.Items.Add(ex.Message);
+                outputList.Items.Dispatcher.BeginInvoke(() =>
+                {
+                    outputList.Items.Add(ex.Message);
+                });
+                
             }
 
             if (process.ExitCode == 0)
             {
                 stdOutput.ToString();
-                outputList.Items.Add(stdOutput.ToString());
+                outputList.Items.Dispatcher.BeginInvoke(() =>
+                {
+                    outputList.Items.Add(stdOutput.ToString());
+                });
+
             }
             else
             {
@@ -102,11 +90,63 @@ namespace WPFVideoStitch
                     message.AppendLine("Std output:");
                     message.AppendLine(stdOutput.ToString());
                 }
-                outputList.Items.Add(message);
+                outputList.Items.Dispatcher.BeginInvoke(() =>
+                {
+                    outputList.Items.Add(message);
+                });
                 //throw new Exception(Format(filename, arguments) + " finished with exit code = " + process.ExitCode + ": " + message);
             }
-            outputList.Items.Add("Finished");
+            outputList.Items.Dispatcher.BeginInvoke(() =>
+            {
+                outputList.Items.Add("Finished!\n");
+            });
+
         }
+        private void Add_Videos(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Multiselect = true;
+            openFileDialog.Filter = "Video files (*.mp4)|*.mp4|Video files (*.avi)|*.avi|All files (*.*)|*.*";
+            openFileDialog.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            if (openFileDialog.ShowDialog() == true)
+            {
+                foreach (var filename in openFileDialog.FileNames)
+                {
+                    VideoPanel.Items.Add(filename);
+                }
+            }
+        }
+
+        private void Merge_Click(object sender, RoutedEventArgs e)
+        {
+            //            string strCmdText = " -f concat -safe 0 -i videos.txt -c copy out.mp4";
+            if(VideoPanel.Items.Count == 0)
+            {
+                MessageBox.Show("Please select video files.", "Alert", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+            File.WriteAllText("videos.txt", "");
+            string outputFilename = "";
+            foreach (var item in VideoPanel.Items)
+            {
+                File.AppendAllText("videos.txt", "file '" + item.ToString() +"'\n");
+                if(outputFilename== "") outputFilename = Path.GetFileNameWithoutExtension(item.ToString()) + "_merged.mp4";
+            }
+            outputList.Items.Clear();
+            outputList.Items.Add("Merging...\n Please wait...");
+//            ThreadStart childref = new ThreadStart(CallToChildThread);
+            Thread childThread = new Thread(CallToChildThread);
+            childThread.Start(
+                new ThreadParameters
+                {
+                    outputFilename = outputFilename,
+                    outputPath = outputPath.Text
+                    // Set other parameters here
+                });
+
+        }
+
+
         private void ListClear_Click(object sender, RoutedEventArgs e)
         {
             VideoPanel.Items.Clear();
@@ -122,7 +162,17 @@ namespace WPFVideoStitch
         }
         private void Sort_Click(object sender, RoutedEventArgs e)
         {
-
+            List<String> list = new List<String>();
+            foreach (var item in VideoPanel.Items)
+            {
+                list.Add(item.ToString());
+            }
+            list.Sort();
+            VideoPanel.Items.Clear();
+            foreach(var item in list)
+            {
+                VideoPanel.Items.Add((String)item.ToString());
+            }
         }
     }
 

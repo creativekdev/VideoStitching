@@ -14,19 +14,9 @@
         <DockPanel Grid.ColumnSpan="2">
             <Menu DockPanel.Dock="Top">
                 <MenuItem Header="_File">
-                    <MenuItem Header="_OpenProject"/>
-                    <Separator />
                     <MenuItem Header="_Import Videos" Click="Import_Videos"/>
-                    <MenuItem Header="_Import Pamaromas"/>
-                    <Separator />
-                    <MenuItem Header="_Save Project"/>
-                    <MenuItem Header="_Save Project as"/>
-                    <MenuItem Header="_Close Project"/>
                     <Separator />
                     <MenuItem Header="_Exit"/>
-                </MenuItem>
-                <MenuItem Header="_Edition">
-                    <MenuItem Header="_Settings"/>
                 </MenuItem>
                 <MenuItem Header="_Tools">
                     <MenuItem Header="_Merge" Click="VideoMerger_Click"/>
@@ -154,7 +144,7 @@
                         Height="300"
                         BorderBrush="Black"
                         BorderThickness="2">
-                            <MediaElement  x:Name="mergedVideoCtl"  LoadedBehavior="Manual"  UnloadedBehavior="Stop" />
+                            <Image  x:Name="mergedVideoCtl"/>
                         </Border>
                         <Slider Grid.Row="1" Width="300" VerticalAlignment="Center"/>
 
