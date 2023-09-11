@@ -26,7 +26,7 @@
                     <Button
                             x:Name="ImportVideo"
                             Click="Import_Videos"
-                            Content="Import Videos" Margin="100,60,800,250" />
+                            Content="Import Videos" Margin="100,172,800,138" />
                     <Grid
                     HorizontalAlignment="Left"
                     Margin="250,10,10,10"
@@ -131,7 +131,7 @@
         </DockPanel>
         <Button
             x:Name="Synchronization_Copy"
-            Margin="100,160,800,150"
+            Margin="100,64,800,246"
             Click="VideoMerger_Click"
             Content="Merge" Grid.ColumnSpan="2"/>
     </Grid>
