@@ -7,26 +7,17 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="768" Width="1024" ResizeMode="NoResize">
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="189*"/>
+            <RowDefinition Height="187*"/>
+        </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="767*"/>
-            <ColumnDefinition Width="33*"/>
+            <ColumnDefinition Width="19*"/>
+            <ColumnDefinition Width="109*"/>
+            <ColumnDefinition Width="0*"/>
         </Grid.ColumnDefinitions>
-        <DockPanel Grid.ColumnSpan="2">
-            <Menu DockPanel.Dock="Top">
-                <MenuItem Header="_File">
-                    <MenuItem Header="_Import Videos" Click="Import_Videos"/>
-                    <Separator />
-                    <MenuItem Header="_Exit"/>
-                </MenuItem>
-                <MenuItem Header="_Tools">
-                    <MenuItem Header="_Merge" Click="VideoMerger_Click"/>
-                </MenuItem>
-                <MenuItem Header="Help">
-                    <MenuItem Header="_Help"/>
-                    <MenuItem Header="_About"/>
-                </MenuItem>
-            </Menu>
-            <Grid>
+        <DockPanel Grid.ColumnSpan="2" Grid.RowSpan="2">
+            <Grid Background="#FF303636">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="360"/>
                     <RowDefinition Height="360"/>
@@ -35,7 +26,7 @@
                     <Button
                             x:Name="ImportVideo"
                             Click="Import_Videos"
-                            Content="Import Videos" Margin="100,10,800,300" />
+                            Content="Import Videos" Margin="100,60,800,250" />
                     <Grid
                     HorizontalAlignment="Left"
                     Margin="250,10,10,10"
@@ -56,7 +47,7 @@
                        Grid.Row="0"
                         Width="300"
                         Height="300"
-                        BorderBrush="Black"
+                        BorderBrush="White"
                         BorderThickness="2">
                                 <MediaElement x:Name="leftVideoCtl"  LoadedBehavior="Manual"  UnloadedBehavior="Stop" />
                             </Border>
@@ -80,7 +71,7 @@
                        Grid.Row="0"
                         Width="300"
                         Height="300"
-                        BorderBrush="Black"
+                        BorderBrush="White"
                         BorderThickness="2">
                                 <MediaElement  x:Name="rightVideoCtl"  LoadedBehavior="Manual"  UnloadedBehavior="Stop"/>
                             </Border>
@@ -90,11 +81,11 @@
                                 <Image Source="images\pause.png" MouseDown="OnMouseDownPause2Media" Margin="12" />
 
                                 <!-- Volume slider. This slider allows a Volume range between 0 and 1. -->
- 
+
                                 <Slider Width="250" Maximum="100" VerticalAlignment="Center"/>
 
                             </StackPanel>
-                            
+
                         </Grid>
 
                     </Grid>
@@ -103,18 +94,18 @@
                 <Grid Grid.Row="1">
                     <Button
                             x:Name="Synchronization"
-                            Margin="100,50,800,250"
+                            Margin="100,40,800,260"
                             Click="Synchronization_Click"
                             Content="Synchronization"/>
                     <Button
                             x:Name="Stitch"
-                            Margin="100,150,800,150"
+                            Margin="100,140,800,160"
 
                             Click="Stitch_Click"
                             Content="Stitch" />
                     <Button
                             x:Name="Render"
-                            Margin="800,250,100,50"
+                            Margin="100,240,800,60"
                         
                             Click="Render_Click"
                             Content="Render" />
@@ -125,19 +116,23 @@
                         </Grid.RowDefinitions>
                         <Border
                        Grid.Row="0"
-                        Width="500"
                         Height="300"
-                        BorderBrush="Black"
-                        BorderThickness="2">
+                        BorderBrush="White"
+                        BorderThickness="2" Margin="250,0,149,0">
                             <Image  x:Name="mergedVideoCtl"/>
                         </Border>
-                        <Slider Grid.Row="1" Width="500" Maximum="100" VerticalAlignment="Center"/>
+                        <Slider Grid.Row="1" Maximum="100" VerticalAlignment="Center" Margin="270,0,153,0"/>
 
                     </Grid>
                 </Grid>
 
             </Grid>
-            
+
         </DockPanel>
+        <Button
+            x:Name="Synchronization_Copy"
+            Margin="100,160,800,150"
+            Click="VideoMerger_Click"
+            Content="Merge" Grid.ColumnSpan="2"/>
     </Grid>
 </Window>

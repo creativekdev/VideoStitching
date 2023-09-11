@@ -1,24 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "E:\\Work\\Germany\\Thomas\\VideoStitching\\WPFVideoStitch\\WPFVideoStitch.csproj": {}
+    "D:\\WORK\\VideoStitching\\VideoStitching\\WPFVideoStitch\\WPFVideoStitch.csproj": {}
   },
   "projects": {
-    "E:\\Work\\Germany\\Thomas\\VideoStitching\\WPFVideoStitch\\WPFVideoStitch.csproj": {
+    "D:\\WORK\\VideoStitching\\VideoStitching\\WPFVideoStitch\\WPFVideoStitch.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "E:\\Work\\Germany\\Thomas\\VideoStitching\\WPFVideoStitch\\WPFVideoStitch.csproj",
+        "projectUniqueName": "D:\\WORK\\VideoStitching\\VideoStitching\\WPFVideoStitch\\WPFVideoStitch.csproj",
         "projectName": "WPFVideoStitch",
-        "projectPath": "E:\\Work\\Germany\\Thomas\\VideoStitching\\WPFVideoStitch\\WPFVideoStitch.csproj",
-        "packagesPath": "C:\\Users\\creative\\.nuget\\packages\\",
-        "outputPath": "E:\\Work\\Germany\\Thomas\\VideoStitching\\WPFVideoStitch\\obj\\",
+        "projectPath": "D:\\WORK\\VideoStitching\\VideoStitching\\WPFVideoStitch\\WPFVideoStitch.csproj",
+        "packagesPath": "C:\\Users\\111\\.nuget\\packages\\",
+        "outputPath": "D:\\WORK\\VideoStitching\\VideoStitching\\WPFVideoStitch\\obj\\",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "D:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-        ],
         "configFilePaths": [
-          "C:\\Users\\creative\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Users\\111\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
@@ -26,7 +22,6 @@
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-          "C:\\Program Files\\dotnet\\library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -97,7 +92,7 @@
               "privateAssets": "none"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.306\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.400\\RuntimeIdentifierGraph.json"
         }
       }
     }
