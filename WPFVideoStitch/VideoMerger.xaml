@@ -5,34 +5,33 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WPFVideoStitch"
         mc:Ignorable="d"
-        Title="VideoMerger" Height="800" Width="830" ResizeMode="NoResize">
+        Title="VideoMerger" Height="562" Width="830" ResizeMode="NoResize">
     <Grid Margin="0,0,0,0">
         <Grid.RowDefinitions>
-            <RowDefinition Height="300"></RowDefinition>
-            <RowDefinition Height="500"></RowDefinition>
+            <RowDefinition Height="434"></RowDefinition>
+            <RowDefinition Height="366"></RowDefinition>
         </Grid.RowDefinitions>
-        <Grid Grid.Row="0">
+        <Grid Grid.Row="0" Background="#FF2A2929" Margin="0,2,0,136" Grid.RowSpan="2">
             <Grid.RowDefinitions>
                 <RowDefinition Height="50"></RowDefinition>
-                <RowDefinition Height="200"></RowDefinition>
-                <RowDefinition Height="50"></RowDefinition>
+                <RowDefinition Height="303"></RowDefinition>
+                <RowDefinition Height="287"></RowDefinition>
             </Grid.RowDefinitions>
-            <Label Content="Input Videos" Margin="20,0,74,195" VerticalAlignment="Bottom" Grid.Row="0" Grid.RowSpan="2"></Label>
-            <ListView Name ="VideoPanel"  Grid.Row="1" AllowDrop="True" Margin="20,5,20,0"></ListView>
-            <Button Content="Sort" HorizontalAlignment="Left" Margin="528,5,0,0" Grid.Row="2" VerticalAlignment="Top" Height="35" Width="100" Click="Sort_Click"/>
-            <Button Content="Clear" HorizontalAlignment="Left" Margin="656,5,0,0" Grid.Row="2" VerticalAlignment="Top" Height="35" Width="100" Click="ListClear_Click"/>
-            <Button Content="Add" HorizontalAlignment="Left" Margin="388,5,0,0" Grid.Row="2" VerticalAlignment="Top" Click="Add_Videos" Height="35" Width="100" />
-        </Grid>
-        <Grid Grid.Row="1">
+            <Label Content="Input Videos" Margin="20,0,74,195" VerticalAlignment="Bottom" Grid.Row="1" Foreground="White" Height="26"/>
+            <ListView Name ="VideoPanel"  Grid.Row="1" AllowDrop="True" Margin="20,5,20,0" d:ItemsSource="{d:SampleData ItemCount=5}" Background="#FF3E3C3C" Foreground="White"></ListView>
+            <Button Content="Sort" HorizontalAlignment="Left" Margin="400,16,0,235" Grid.Row="2" Width="100" Click="Sort_Click"/>
+            <Button Content="Clear" HorizontalAlignment="Left" Margin="525,16,0,0" Grid.Row="2" VerticalAlignment="Top" Height="34" Width="100" Click="ListClear_Click"/>
+            <Button Content="Add" HorizontalAlignment="Left" Margin="275,16,0,0" Grid.Row="2" VerticalAlignment="Top" Click="Add_Videos" Height="34" Width="100" />
+            <Button Content="Merge" HorizontalAlignment="Left" Margin="650,14,0,0" VerticalAlignment="Top" Click="Merge_Click" Height="36" Width="100" Grid.Row="2"/>
 
-            <Rectangle HorizontalAlignment="Left" Height="59" Margin="20,26,0,0" Stroke="Black" VerticalAlignment="Top" Width="770" />
-            <Label Content="Output Path" HorizontalAlignment="Left" Margin="22,0,0,0" VerticalAlignment="Top" Width="87" Height="26" RenderTransformOrigin="0.854,0.566"/>
-            <TextBox x:Name="outputPath" HorizontalAlignment="Left" Height="24" Margin="35,45,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="667" Text="D:\"/>
+        </Grid>
+        <Grid Background="#FF2A2929" Margin="0,428,0,22" Grid.RowSpan="2">
+
+            <Rectangle HorizontalAlignment="Left" Height="59" Margin="20,26,0,0" Stroke="White" VerticalAlignment="Top" Width="770" />
+            <Label Content="Output Path" HorizontalAlignment="Left" Margin="22,0,0,0" VerticalAlignment="Top" Width="87" Height="26" RenderTransformOrigin="0.854,0.566" Foreground="White"/>
+            <TextBox x:Name="outputPath" HorizontalAlignment="Left" Height="24" Margin="35,45,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="667" Text="D:\" Background="#FF3E3C3C" Foreground="White"/>
             <Button Content="..." HorizontalAlignment="Left" Margin="707,45,0,0" VerticalAlignment="Top" Width="40" Height="24" Click="OutputPath_Click"/>
-            <ListBox x:Name="outputList" HorizontalAlignment="Left" Height="291" Margin="22,150,0,0" VerticalAlignment="Top" Width="770" ScrollViewer.VerticalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="False" Grid.ColumnSpan="2"/>
-            <Label Content="Status" HorizontalAlignment="Left" Margin="22,124,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.594,-0.153"/>
-            <Button Content="Merge" HorizontalAlignment="Left" Margin="669,104,0,0" VerticalAlignment="Top" Click="Merge_Click" Height="35" Width="100"/>
-
         </Grid>
+        <Label Content="Video List" HorizontalAlignment="Left" Margin="20,24,0,0" Grid.Row="0" VerticalAlignment="Top" Foreground="White"/>
     </Grid>
 </Window>

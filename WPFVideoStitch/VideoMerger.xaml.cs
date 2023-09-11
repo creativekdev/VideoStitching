@@ -58,20 +58,22 @@ namespace WPFVideoStitch
             catch (Exception ex)
             {
                 //                throw new Exception("OS error while executing " + Format(filename, arguments) + ": " + e.Message, e);
-                outputList.Items.Dispatcher.BeginInvoke(() =>
-                {
-                    outputList.Items.Add(ex.Message);
-                });
+                //outputList.Items.Dispatcher.BeginInvoke(() =>
+                //{
+                //    outputList.Items.Add(ex.Message);
+                //});
+                //MessageBox.Show(ex.Message, "error!");
                 
             }
 
             if (process.ExitCode == 0)
             {
                 stdOutput.ToString();
-                outputList.Items.Dispatcher.BeginInvoke(() =>
-                {
-                    outputList.Items.Add(stdOutput.ToString());
-                });
+                //outputList.Items.Dispatcher.BeginInvoke(() =>
+                //{
+                //    outputList.Items.Add(stdOutput.ToString());
+                //});
+                //MessageBox.Show(stdOutput.ToString(),"Error!");
 
             }
             else
@@ -88,17 +90,19 @@ namespace WPFVideoStitch
                     message.AppendLine("Std output:");
                     message.AppendLine(stdOutput.ToString());
                 }
-                outputList.Items.Dispatcher.BeginInvoke(() =>
-                {
-                    outputList.Items.Add(message);
-                });
+                //outputList.Items.Dispatcher.BeginInvoke(() =>
+                //{
+                //    outputList.Items.Add(message);
+                //});
+                MessageBox.Show(stdOutput.ToString(),"Error!");
                 //throw new Exception(Format(filename, arguments) + " finished with exit code = " + process.ExitCode + ": " + message);
             }
-            outputList.Items.Dispatcher.BeginInvoke(() =>
-            {
-                outputList.Items.Add("Finished!\n");
-            });
-
+            //outputList.Items.Dispatcher.BeginInvoke(() =>
+            //{
+            //    outputList.Items.Add("Finished!\n");
+            //});
+            MessageBox.Show("Merging video has finished!", "Success!");
+            VideoPanel.Items.Clear();
         }
         private void Add_Videos(object sender, RoutedEventArgs e)
         {
@@ -111,6 +115,7 @@ namespace WPFVideoStitch
                 foreach (var filename in openFileDialog.FileNames)
                 {
                     VideoPanel.Items.Add(filename);
+
                 }
             }
         }
@@ -140,8 +145,8 @@ namespace WPFVideoStitch
 
                 }
             }
-            outputList.Items.Clear();
-            outputList.Items.Add("Merging...\n Please wait...");
+            //outputList.Items.Clear();
+            //outputList.Items.Add("Merging...\n Please wait...");
 //            ThreadStart childref = new ThreadStart(CallToChildThread);
             Thread childThread = new Thread(CallToChildThread);
             childThread.Start(
@@ -181,6 +186,11 @@ namespace WPFVideoStitch
             {
                 VideoPanel.Items.Add((String)item.ToString());
             }
+        }
+
+        private void outputList_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        {
+
         }
     }
 
