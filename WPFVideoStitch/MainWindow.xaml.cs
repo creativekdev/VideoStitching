@@ -157,5 +157,41 @@ namespace WPFVideoStitch
             VideoMerger videoMerger = new VideoMerger();
             videoMerger.Show();
         }
+
+        private void Slider1_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            ((Slider)sender).Value = 50;
+        }
+        void OnMouseDownPause1Media(object sender, MouseButtonEventArgs args)
+        {
+
+            // The Pause method pauses the media if it is currently running.
+            // The Play method can be used to resume.
+            //            myMediaElement.Pause();
+            if(leftVideoCtl.CanPause)
+            {
+                leftVideoCtl.Pause();
+            }
+            else
+            {
+                leftVideoCtl.Play();
+            }
+        }
+        void OnMouseDownPause2Media(object sender, MouseButtonEventArgs args)
+        {
+
+            // The Pause method pauses the media if it is currently running.
+            // The Play method can be used to resume.
+            //            myMediaElement.Pause();            
+            if (rightVideoCtl.CanPause)
+            {
+                rightVideoCtl.Pause();
+            }
+            else
+            {
+                rightVideoCtl.Play();
+            }
+
+        }
     }
 }
