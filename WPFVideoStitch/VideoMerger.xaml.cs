@@ -94,7 +94,7 @@ namespace WPFVideoStitch
                 //{
                 //    outputList.Items.Add(message);
                 //});
-                MessageBox.Show(stdOutput.ToString(),"Error!");
+                //MessageBox.Show(stdOutput.ToString(),"Error!");
                 //throw new Exception(Format(filename, arguments) + " finished with exit code = " + process.ExitCode + ": " + message);
             }
             //outputList.Items.Dispatcher.BeginInvoke(() =>
@@ -102,7 +102,7 @@ namespace WPFVideoStitch
             //    outputList.Items.Add("Finished!\n");
             //});
             MessageBox.Show("Merging video has finished!", "Success!");
-            VideoPanel.Items.Clear();
+            //VideoPanel.Items.Clear();
         }
         private void Add_Videos(object sender, RoutedEventArgs e)
         {
