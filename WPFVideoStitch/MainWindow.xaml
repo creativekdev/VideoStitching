@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WPFVideoStitch"
         mc:Ignorable="d"
-        Title="MainWindow" Height="768" Width="1024">
+        Title="MainWindow" Height="768" Width="1024" ResizeMode="NoResize">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="767*"/>
@@ -28,133 +28,116 @@
             </Menu>
             <Grid>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="70" />
-                    <RowDefinition Height="auto" />
+                    <RowDefinition Height="360"/>
+                    <RowDefinition Height="360"/>
                 </Grid.RowDefinitions>
-                <Grid
-                        Grid.Row="0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="150"/>
-                        <ColumnDefinition Width="50" />
-                        <ColumnDefinition Width="150"/>
-                        <ColumnDefinition Width="50" />
-                        <ColumnDefinition Width="150" />
-                        <ColumnDefinition Width="50" />
-                        <ColumnDefinition Width="150" />
-                        <ColumnDefinition Width="50" />
-                        <ColumnDefinition Width="150" />
-                    </Grid.ColumnDefinitions>
-                    <Grid
-                            Grid.Column="0">
-                        <Button
-                            x:Name="Merge"
-                            Margin="10"                                
-                            Click="VideoMerger_Click"
-                            Content="Video Merge" />
-                    </Grid>
-                    <Grid
-                            Grid.Column="2">
-                        <Button
+                <Grid Grid.Row="0">
+                    <Button
                             x:Name="ImportVideo"
-                            Margin="10"                                
                             Click="Import_Videos"
-                            Content="Import Videos" />
-                    </Grid>
+                            Content="Import Videos" Margin="100,10,800,300" />
                     <Grid
-                            Grid.Column="4">
-                        <Button
-                            x:Name="Synchronization"
-                            Margin="10"                                
-                            Click="Synchronization_Click"
-                            Content="Synchronization" />
-                    </Grid>
-                    <Grid
-                            Grid.Column="6">
-                        <Button
-                            x:Name="Stitch"
-                            Margin="10"
-                            Click="Stitch_Click"
-                            Content="Stitch" />
-                    </Grid>
-                    <Grid
-                            Grid.Column="8">
-                        <Button
-                            x:Name="Render"
-                            Margin="10"
-                            Click="Render_Click"
-                            Content="Render" />
-                    </Grid>
-                </Grid>
-
-                <Grid
-                Grid.Row="1"
-                HorizontalAlignment="Left"
-                Margin="10"
-                >
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="300" />
-                        <ColumnDefinition Width="10" />
-                        <ColumnDefinition Width="300" />
-                        <ColumnDefinition Width="50" />
-                        <ColumnDefinition Width="300" />
-
-                    </Grid.ColumnDefinitions>
-                    <Grid  Grid.Column="0">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="auto"></RowDefinition>
-                            <RowDefinition Height="50"></RowDefinition>
-                            <RowDefinition Height="auto"></RowDefinition>
-                        </Grid.RowDefinitions>
-                        <Border
+                    HorizontalAlignment="Left"
+                    Margin="250,10,10,10"
+                    >
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="300" />
+                            <ColumnDefinition Width="10" />
+                            <ColumnDefinition Width="300" />
+                        </Grid.ColumnDefinitions>
+                        <Grid  Grid.Column="0">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="auto"></RowDefinition>
+                                <RowDefinition Height="50"></RowDefinition>
+                                <RowDefinition Height="auto"></RowDefinition>
+                            </Grid.RowDefinitions>
+                            <Border
                         x:Name="webcamContainer"
                        Grid.Row="0"
                         Width="300"
                         Height="300"
                         BorderBrush="Black"
                         BorderThickness="2">
-                            <MediaElement x:Name="leftVideoCtl"  LoadedBehavior="Manual"  UnloadedBehavior="Stop" />
-                        </Border>
-                        <Slider Grid.Row="1" Width="300" VerticalAlignment="Center"/>
+                                <MediaElement x:Name="leftVideoCtl"  LoadedBehavior="Manual"  UnloadedBehavior="Stop" />
+                            </Border>
+                            <StackPanel  Grid.Row="1" Width="300" HorizontalAlignment="Center" Orientation="Horizontal">
 
-                    </Grid>
-                    <Grid  Grid.Column="2">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="auto"></RowDefinition>
-                            <RowDefinition Height="50"></RowDefinition>
-                        </Grid.RowDefinitions>
-                        <Border
+                                <!-- Play button. -->
+                                <Image Source="images\pause.png" MouseDown="OnMouseDownPause1Media" Margin="12" />
+
+                                <!-- Volume slider. This slider allows a Volume range between 0 and 1. -->
+
+                                <Slider Width="250" Maximum="100" VerticalAlignment="Center" ValueChanged="Slider1_ValueChanged"/>
+
+                            </StackPanel>
+                        </Grid>
+                        <Grid  Grid.Column="2">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="auto"></RowDefinition>
+                                <RowDefinition Height="50"></RowDefinition>
+                            </Grid.RowDefinitions>
+                            <Border
                        Grid.Row="0"
                         Width="300"
                         Height="300"
                         BorderBrush="Black"
                         BorderThickness="2">
-                            <MediaElement  x:Name="rightVideoCtl"  LoadedBehavior="Manual"  UnloadedBehavior="Stop"/>
-                        </Border>
-                        <Slider Grid.Row="1" Width="300" VerticalAlignment="Center"/>
+                                <MediaElement  x:Name="rightVideoCtl"  LoadedBehavior="Manual"  UnloadedBehavior="Stop"/>
+                            </Border>
+                            <StackPanel  Grid.Row="1" Width="300" HorizontalAlignment="Center" Orientation="Horizontal">
+
+                                <!-- Play button. -->
+                                <Image Source="images\pause.png" MouseDown="OnMouseDownPause2Media" Margin="12" />
+
+                                <!-- Volume slider. This slider allows a Volume range between 0 and 1. -->
+ 
+                                <Slider Width="250" Maximum="100" VerticalAlignment="Center"/>
+
+                            </StackPanel>
+                            
+                        </Grid>
 
                     </Grid>
-                    <Grid  Grid.Column="4">
+
+                </Grid>
+                <Grid Grid.Row="1">
+                    <Button
+                            x:Name="Synchronization"
+                            Margin="100,50,800,250"
+                            Click="Synchronization_Click"
+                            Content="Synchronization"/>
+                    <Button
+                            x:Name="Stitch"
+                            Margin="100,150,800,150"
+
+                            Click="Stitch_Click"
+                            Content="Stitch" />
+                    <Button
+                            x:Name="Render"
+                            Margin="800,250,100,50"
+                        
+                            Click="Render_Click"
+                            Content="Render" />
+                    <Grid  >
                         <Grid.RowDefinitions>
                             <RowDefinition Height="auto"></RowDefinition>
                             <RowDefinition Height="50"></RowDefinition>
                         </Grid.RowDefinitions>
                         <Border
                        Grid.Row="0"
-                        Width="300"
+                        Width="500"
                         Height="300"
                         BorderBrush="Black"
                         BorderThickness="2">
                             <Image  x:Name="mergedVideoCtl"/>
                         </Border>
-                        <Slider Grid.Row="1" Width="300" VerticalAlignment="Center"/>
+                        <Slider Grid.Row="1" Width="500" Maximum="100" VerticalAlignment="Center"/>
 
                     </Grid>
-
                 </Grid>
 
-
             </Grid>
-
+            
         </DockPanel>
     </Grid>
 </Window>

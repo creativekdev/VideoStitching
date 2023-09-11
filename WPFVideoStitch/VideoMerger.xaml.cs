@@ -28,10 +28,8 @@ namespace WPFVideoStitch
         public void CallToChildThread(Object obj)
         {
             ThreadParameters threadParams = (ThreadParameters)obj;
-
             string command = "ffmpeg";
             string arguments = " -f concat -safe 0 -i videos.txt -c copy \"" + threadParams.outputPath + "/" + threadParams.outputFilename + "\"";
-
             var process = new Process();
 
             process.StartInfo.FileName = command;
@@ -126,11 +124,21 @@ namespace WPFVideoStitch
                 return;
             }
             File.WriteAllText("videos.txt", "");
+
             string outputFilename = "";
             foreach (var item in VideoPanel.Items)
             {
                 File.AppendAllText("videos.txt", "file '" + item.ToString() +"'\n");
-                if(outputFilename== "") outputFilename = Path.GetFileNameWithoutExtension(item.ToString()) + "_merged.mp4";
+                if (outputFilename == "")
+                {
+                    outputFilename = Path.GetFileNameWithoutExtension(item.ToString()) + "_merged.mp4";
+                    int k = 1;
+                    while (File.Exists(outputPath.Text + "/" + outputFilename))
+                    {
+                        outputFilename = Path.GetFileNameWithoutExtension(item.ToString()) + "_merged" + "(" + k++ + ")" + ".mp4";
+                    }
+
+                }
             }
             outputList.Items.Clear();
             outputList.Items.Add("Merging...\n Please wait...");
