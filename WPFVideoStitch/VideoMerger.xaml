@@ -5,11 +5,11 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WPFVideoStitch"
         mc:Ignorable="d"
-        Title="VideoMerger" Height="562" Width="830" ResizeMode="NoResize">
+        Title="VideoMerger" Height="584" Width="815" ResizeMode="NoResize">
     <Grid Margin="0,0,0,0">
         <Grid.RowDefinitions>
-            <RowDefinition Height="434"></RowDefinition>
-            <RowDefinition Height="366"></RowDefinition>
+            <RowDefinition Height="443"></RowDefinition>
+            <RowDefinition Height="357"></RowDefinition>
         </Grid.RowDefinitions>
         <Grid Grid.Row="0" Background="#FF2A2929" Margin="0,2,0,136" Grid.RowSpan="2">
             <Grid.RowDefinitions>
@@ -25,13 +25,15 @@
             <Button Content="Merge" HorizontalAlignment="Left" Margin="650,14,0,0" VerticalAlignment="Top" Click="Merge_Click" Height="36" Width="100" Grid.Row="2"/>
 
         </Grid>
-        <Grid Background="#FF2A2929" Margin="0,428,0,22" Grid.RowSpan="2">
+        <Grid Background="#FF2A2929" Margin="0,14,0,2" Grid.Row="1">
 
             <Rectangle HorizontalAlignment="Left" Height="59" Margin="20,26,0,0" Stroke="White" VerticalAlignment="Top" Width="770" />
             <Label Content="Output Path" HorizontalAlignment="Left" Margin="22,0,0,0" VerticalAlignment="Top" Width="87" Height="26" RenderTransformOrigin="0.854,0.566" Foreground="White"/>
             <TextBox x:Name="outputPath" HorizontalAlignment="Left" Height="24" Margin="35,45,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="667" Text="D:\" Background="#FF3E3C3C" Foreground="White"/>
             <Button Content="..." HorizontalAlignment="Left" Margin="707,45,0,0" VerticalAlignment="Top" Width="40" Height="24" Click="OutputPath_Click"/>
         </Grid>
-        <Label Content="Video List" HorizontalAlignment="Left" Margin="20,24,0,0" Grid.Row="0" VerticalAlignment="Top" Foreground="White"/>
+        <Label Content="Video List" HorizontalAlignment="Left" Margin="20,24,0,0" Grid.Row="0" VerticalAlignment="Top" Foreground="White" Height="26" Width="62"/>
+        <ProgressBar Style="{DynamicResource ProgressBarStyleforMerge}" Minimum="0" Maximum="100" x:Name="pbStatus" IsIndeterminate="True" Margin="20,418,29,10" />
+        <TextBlock Text="merging..." x:Name="pbText" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="377,416,0,0" />
     </Grid>
 </Window>

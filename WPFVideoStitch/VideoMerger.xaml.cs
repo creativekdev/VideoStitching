@@ -19,6 +19,8 @@ namespace WPFVideoStitch
         public VideoMerger()
         {
             InitializeComponent();
+            pbStatus.Visibility = Visibility.Collapsed;
+            pbText.Visibility = Visibility.Collapsed;
         }
         public class ThreadParameters
         {
@@ -28,6 +30,26 @@ namespace WPFVideoStitch
         public void CallToChildThread(Object obj)
         {
             ThreadParameters threadParams = (ThreadParameters)obj;
+
+            /*Working working = null;
+
+
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                working = new Working
+                {
+                    Owner = this
+                };
+                working.Show();
+            });*/
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                pbStatus.Visibility = Visibility.Visible;
+                pbText.Visibility = Visibility.Visible;
+                this.IsEnabled = false;
+            });
+
+
             string command = "ffmpeg";
             string arguments = " -f concat -safe 0 -i videos.txt -c copy \"" + threadParams.outputPath + "/" + threadParams.outputFilename + "\"";
             var process = new Process();
@@ -63,7 +85,7 @@ namespace WPFVideoStitch
                 //    outputList.Items.Add(ex.Message);
                 //});
                 //MessageBox.Show(ex.Message, "error!");
-                
+
             }
 
             if (process.ExitCode == 0)
@@ -101,6 +123,17 @@ namespace WPFVideoStitch
             //{
             //    outputList.Items.Add("Finished!\n");
             //});
+            /*Application.Current.Dispatcher.Invoke(() =>
+            {
+                working.Close();
+            });*/
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                pbStatus.Visibility = Visibility.Collapsed;
+                pbText.Visibility = Visibility.Collapsed;
+                this.IsEnabled = true;
+                VideoPanel.Items.Clear();
+            });
             MessageBox.Show("Merging video has finished!", "Success!");
             //VideoPanel.Items.Clear();
         }

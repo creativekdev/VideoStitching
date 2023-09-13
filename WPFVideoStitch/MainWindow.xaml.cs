@@ -22,8 +22,10 @@ using javax.swing.text.html;
 using Emgu.CV.UI;
 using System.Text.RegularExpressions;
 using NAudio.Utils;
+using NAudio.Wave;
 using System.Windows.Interop;
 using System.Drawing;
+using System.IO;
 
 namespace WPFVideoStitch
 {
@@ -38,6 +40,27 @@ namespace WPFVideoStitch
         {
             InitializeComponent();
         }
+
+        private void ExtractAudioFormVideo(string videoFilePath , string outputFilePath)
+        {
+            string ffmpegPath = @"ffmpeg.exe";
+            string arguments = $"-i \"{videoFilePath}\" -vn -acodec copy \"{outputFilePath}\"";
+
+            var process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = ffmpegPath,
+                    Arguments = arguments,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                }
+            };
+
+            process.Start();
+            process.WaitForExit();
+        }
+
         private void Import_Videos(object sender, RoutedEventArgs e)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
@@ -53,12 +76,30 @@ namespace WPFVideoStitch
                     if (i == 1)
                     {
                         leftVideo = file;
+
+                        if (File.Exists("left.wav"))
+                        {
+                            // Delete the existing file
+                            File.Delete("left.wav");
+                        }
+
+                        ExtractAudioFormVideo(file, "left.wav");
+
                         leftVideoCtl.Source = new Uri(leftVideo);
                         leftVideoCtl.Play();
                     }
                     else if (i == 2)
                     {
                         rightVideo = file;
+
+                        if (File.Exists("right.wav"))
+                        {
+                            // Delete the existing file
+                            File.Delete("right.wav");
+                        }
+
+                        ExtractAudioFormVideo(file, "right.wav");
+
                         rightVideoCtl.Source = new Uri(rightVideo);
                         rightVideoCtl.Play();
                     }
@@ -95,16 +136,18 @@ namespace WPFVideoStitch
         private void Stitch_Click(object sender, RoutedEventArgs e)
         {
             Image<Bgr, byte>[] sourceImages = new Image<Bgr, byte>[2];
-            sourceImages[0] = new Image<Bgr, byte> ("cam1.jpg");
-            sourceImages[1] = new Image<Bgr, byte>("cam2.jpg");
-/*            using (Mat frame = new Mat())
-            using (VideoCapture capture = new VideoCapture("Left.avi"))
-            while (CvInvoke.WaitKey(1) == -1)
-            {
-                capture.Read(frame);
-                CvInvoke.Imshow("ss", frame);
-            }
-*/
+            sourceImages[0] = new Image<Bgr, byte> ("cam1.png");
+            sourceImages[1] = new Image<Bgr, byte>("cam2.png");
+//            using (Mat frame = new Mat())
+//            using (VideoCapture capture = new VideoCapture("Left.avi"))
+//            {
+//                while (capture.Read(frame))
+//                {
+//                    //capture.Read(frame);
+//                    CvInvoke.Imshow("ss", frame);
+//                }
+//            }
+
             //            sourceImages[2] = new Image<Bgr, byte>("cam3.jpg");
             //            sourceImages[3] = new Image<Bgr, byte>("cam4.jpg");
             //            Capture _capture;

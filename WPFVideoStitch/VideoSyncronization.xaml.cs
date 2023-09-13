@@ -136,7 +136,7 @@ namespace WPFVideoStitch
 
             var mfccs1 = ExtractMFCCs(left1);
             var mfccs2 = ExtractMFCCs(left2);
-            float[] crossCorrelation = CalculateCrossCorrelation(mfccs1, mfccs2);
+             float[] crossCorrelation = CalculateCrossCorrelation(mfccs1, mfccs2);
 //            ShowPlot("res", left1.Samples, left2.Samples, crossCorrelation);
             // Find the index of the maximum correlation value (alignment)
             int maxIndex = Array.IndexOf(crossCorrelation, crossCorrelation.Max());
@@ -208,6 +208,12 @@ namespace WPFVideoStitch
 
             return res.Samples;
         }
+
+        private void ReSetButton_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
         public VideoSyncronization(String left, String right)
         {
             InitializeComponent();

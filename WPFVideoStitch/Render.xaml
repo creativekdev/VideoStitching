@@ -5,8 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WPFVideoStitch"
         mc:Ignorable="d"
-        Title="Render" Height="450" Width="800">
-    <Grid Margin="0,0,0,0" Background="#FF2A2929">
+        Title="Render" Height="252" Width="800">
+    <Grid Margin="0,0,0,-6" Background="#FF2A2929">
         <Grid.RowDefinitions>
             <RowDefinition Height="17*"/>
             <RowDefinition Height="2*"/>
@@ -16,9 +16,9 @@
             <TextBox HorizontalAlignment="Left" Height="21" Margin="29,9,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="666"/>
         </Border>
         <Label Content="Output" HorizontalAlignment="Left" Margin="22,35,0,0" VerticalAlignment="Top" Width="54" Foreground="White"/>
-        <Button Content="..." HorizontalAlignment="Left" Margin="720,1,0,0" VerticalAlignment="Top" Width="33" Grid.Row="2"/>
-        <Button Content="Save" HorizontalAlignment="Left" Margin="564,37,0,0" VerticalAlignment="Top" Width="57" Grid.Row="2"/>
-        <Button Content="Close" HorizontalAlignment="Left" Margin="669,37,0,0" VerticalAlignment="Top" Width="56" Height="20" Grid.Row="2"/>
+        <Button Content="..." HorizontalAlignment="Left" Margin="724,33,0,0" VerticalAlignment="Top" Width="33" Grid.Row="2"/>
+        <Button Content="Save" HorizontalAlignment="Left" Margin="568,72,0,0" VerticalAlignment="Top" Width="57" Grid.Row="2"/>
+        <Button Content="Close" HorizontalAlignment="Left" Margin="673,72,0,0" VerticalAlignment="Top" Width="56" Height="20" Grid.Row="2"/>
 
     </Grid>
 </Window>
