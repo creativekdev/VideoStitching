@@ -43,7 +43,6 @@ namespace WPFVideoStitch
     {
         String rightVideo;
         String leftVideo;
-        Stitcher stitcher;
 
 
         bool LeftSlideDraggingFlag = false;
@@ -53,6 +52,7 @@ namespace WPFVideoStitch
         bool LeftSlidePlayStatus = false;
         bool RightSlidePlayStatus = false;
         bool CenteralSlidePlayStatus = false;
+
 
         TimeSpan _position;
         DispatcherTimer _timer = new DispatcherTimer();
@@ -67,8 +67,11 @@ namespace WPFVideoStitch
 
             stStatus.Visibility = Visibility.Collapsed;
             stText.Visibility = Visibility.Collapsed;
+            mergedVideoCtl.Visibility = Visibility.Collapsed;
 
-
+            Synchronization.IsEnabled = false;
+            Stitch.IsEnabled = false;
+            Render.IsEnabled = false;
         }
 
         void ticktock(object sender, EventArgs e)
@@ -142,7 +145,6 @@ namespace WPFVideoStitch
                             // Delete the existing file
                             File.Delete("left.wav");
                         }
-
                         ExtractAudioFormVideo(file, "left.wav");
                         leftVideoCtl.Source = new Uri(leftVideo);
 //                        leftVideoCtl.MediaOpened += LeftMediaElement_MediaOpened;
@@ -164,6 +166,10 @@ namespace WPFVideoStitch
                         rightVideoCtl.Source = new Uri(rightVideo);
                         rightVideoCtl.Play();
                         RightSlidePlayStatus = true;
+
+                        Synchronization.IsEnabled = true;
+                        Stitch.IsEnabled = true;
+                        Render.IsEnabled = true;
                     }
                 }
                                
@@ -209,98 +215,147 @@ namespace WPFVideoStitch
 
         public void CallVideoCreate()
         {
-            using VideoCapture videoCapture1 = new VideoCapture(leftVideo);
-            using VideoCapture videoCapture2 = new VideoCapture(rightVideo);
-            using Mat frame1 = new Mat();
-            using Mat frame2 = new Mat();
-            videoCapture1.Read(frame1);
-            videoCapture2.Read(frame2);
-
-            Application.Current.Dispatcher.Invoke(() =>
+            using (VideoCapture videoCapture1 = new VideoCapture(leftVideo))
+            using (VideoCapture videoCapture2 = new VideoCapture(rightVideo))
             {
-                stStatus.Maximum = (int)videoCapture2.Get(Emgu.CV.CvEnum.CapProp.FrameCount);
+                using Mat frame1 = new Mat();
+                using Mat frame2 = new Mat();
+                videoCapture1.Read(frame1);
+                videoCapture2.Read(frame2);
 
-                myText.Content = stStatus.Maximum.ToString();
-                stStatus.Value = 0;
-                stStatus.Visibility = Visibility.Visible;
-                stText.Visibility = Visibility.Visible;
-
-                this.IsEnabled = false;
-            });
-
-
-            //Stitcher stitcher = 
-            //frame1.Save("1.png");
-
-            Mat first_result = Generate_Stitch(frame1, frame2);
-            int frameWidth = first_result.Width;
-            int frameHeight = first_result.Height;
-    
-
-
-
-            using (VideoWriter videoWriter = new VideoWriter("output.mp4", 25, new System.Drawing.Size(frameWidth, frameHeight), true))
-            {
-                while (videoCapture1.IsOpened && videoCapture2.IsOpened)
+                Application.Current.Dispatcher.Invoke(() =>
                 {
-                    videoCapture1.Read(frame1);
-                    videoCapture2.Read(frame2);
+                    stStatus.Maximum = (int)videoCapture2.Get(Emgu.CV.CvEnum.CapProp.FrameCount);
+                    stStatus.Value = 0;
+                    stStatus.Visibility = Visibility.Visible;
+                    stText.Visibility = Visibility.Visible;
+                    mergedVideoCtl.Visibility = Visibility.Collapsed;
+                    mergedImage.Visibility = Visibility.Visible;
+                    this.IsEnabled = false;
+                });
 
+                Mat first_result = Generate_Stitch(frame1, frame2);
+                using Mat previous_result = first_result.Clone();
+                int frameWidth = first_result.Width;
+                int frameHeight = first_result.Height;
 
-                    if (frame1.IsEmpty || frame2.IsEmpty)
-                        break;
-
-                    Mat result = Generate_Stitch(frame1, frame2);
-
-                    if (result.Width != frame1.Width)
+                using (VideoWriter videoWriter = new VideoWriter("output.mp4", 25, new System.Drawing.Size(frameWidth, frameHeight), true))
+                {
+                    while (videoCapture1.IsOpened && videoCapture2.IsOpened)
                     {
-                        using Mat resized_mat = new Mat();
-                        CvInvoke.Resize(result, resized_mat, new System.Drawing.Size(frameWidth, frameHeight));
-                        Application.Current.Dispatcher.Invoke(() =>
+                        videoCapture1.Read(frame1);
+                        videoCapture2.Read(frame2);
+
+                        if (frame1.IsEmpty || frame2.IsEmpty)
+                            break;
+
+                        Mat result = Generate_Stitch(frame1, frame2);
+
+                        if (result.Width != frame1.Width)
                         {
-                            myText.Content = stStatus.Value.ToString();
-                            stStatus.Value += 1;
-                        });
-                        result.Dispose();
-                        videoWriter.Write(resized_mat);
+                            using (Mat resized_mat = new Mat())
+                            {
+                                using (Mat showing_mat = new Mat())
+                                {
+                                    CvInvoke.Resize(result, resized_mat, new System.Drawing.Size(frameWidth, frameHeight));
+                                    CvInvoke.Resize(result, showing_mat, new System.Drawing.Size(1024, 768));
+
+                                    Application.Current.Dispatcher.Invoke(() =>
+                                    {
+                                        stStatus.Value += 1;
+                                    });
+
+                                    videoWriter.Write(resized_mat);
+                                    Application.Current.Dispatcher.Invoke(() =>
+                                    {
+                                        mergedImage.Source = ToBitmapSource(showing_mat.ToImage<Bgr, byte>());
+                                    });
+                                }
+                            }
+                        }
+                        else
+                        {
+                            videoWriter.Write(previous_result);
+                        }
                     }
                 }
-                videoWriter.Dispose();
-                
+
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    stStatus.Visibility = Visibility.Collapsed;
+                    stText.Visibility = Visibility.Collapsed;
+
+                    string FileName = "output.mp4";
+                    string currentDirectory = Directory.GetCurrentDirectory();
+                    string FilePath = System.IO.Path.Combine(currentDirectory, FileName);
+                    var uri = new Uri(FilePath);
+                    mergedVideoCtl.Source = uri;
+                    mergedVideoCtl.Play();
+                    CenteralSlidePlayStatus = true;
+                    leftVideoCtl.Position = TimeSpan.FromSeconds(0);
+                    rightVideoCtl.Position = TimeSpan.FromSeconds(0);
+
+                    mergedVideoCtl.Visibility = Visibility.Visible;
+                    mergedImage.Visibility = Visibility.Collapsed;
+                    this.IsEnabled = true;
+                    this.Activate();
+                });
             }
-
-            Application.Current.Dispatcher.Invoke(() =>
-            {
-                stStatus.Visibility = Visibility.Collapsed;
-                stText.Visibility = Visibility.Collapsed;
-
-
-                //MessageBox.Show("Stitching video has finished!", "Success!");
-
-                string FileName = "output.mp4";
-                string currentDirectory = Directory.GetCurrentDirectory();
-                string FilePath = System.IO.Path.Combine(currentDirectory, FileName);
-
-                var uri = new Uri(FilePath);
-
-                mergedVideoCtl.Source = uri;
-                mergedVideoCtl.Play();
-
-                CenteralSlidePlayStatus = true;
-
-                leftVideoCtl.Position = TimeSpan.FromSeconds(0);
-                rightVideoCtl.Position = TimeSpan.FromSeconds(0);
-
-                this.IsEnabled = true;
-                this.Activate();
-
-            });
-
-            frame1.Dispose();
-            frame2.Dispose();
-            videoCapture1.Dispose();
-            videoCapture2.Dispose();
         }
+
+        private Mat Generate_Stitch(Mat mat1, Mat mat2)
+        {
+            using (Stitcher stitcher = new Stitcher())
+            using (Emgu.CV.Features2D.AKAZE finder = new Emgu.CV.Features2D.AKAZE())
+            using (Emgu.CV.Stitching.WarperCreator warper = new SphericalWarper())
+            {
+                stitcher.SetFeaturesFinder(finder);
+                stitcher.SetWarper(warper);
+
+                Mat result = new Mat();
+
+                try
+                {
+                    if (mat1 == null || mat2 == null)
+                        return mat1;
+
+                    using (VectorOfMat vm = new VectorOfMat())
+                    {
+                        // Push images to VectorOfMat
+                        vm.Push(mat1);
+                        vm.Push(mat2);
+
+                        stitcher.PanoConfidenceThresh = 0.2;
+
+                        //stitcher.EstimateTransform(vm);
+                        //Stitcher.Status stitchStatus = stitcher.ComposePanorama(vm , result);
+
+                        Stitcher.Status stitchStatus = stitcher.Stitch(vm, result);
+                        //StitcherParams storedParams = stitcher.
+
+                        Mat stitchedFrame = new Mat();
+
+                        CvInvoke.HConcat(mat1, mat2, stitchedFrame);
+
+                        // Step 5: Display or save the stitched frame
+                        CvInvoke.Imshow("Stitched Frame", stitchedFrame);
+                        CvInvoke.WaitKey(1);
+
+                        if (stitchStatus == Stitcher.Status.Ok)
+                        {
+                            return result;
+                        }
+                        else
+                            return mat1;
+                    }
+                }
+                catch (Exception e)
+                {
+                    return mat1;
+                }
+            }
+        }
+
 
         private Mat Generate_Stitcher(Mat mat1, Mat mat2)
         {
@@ -335,51 +390,6 @@ namespace WPFVideoStitch
                 }
             }
         } 
-        private Mat Generate_Stitch(Mat mat1 , Mat mat2)
-        {
-            using (Stitcher stitcher = new Stitcher())
-            using (Emgu.CV.Features2D.AKAZE finder = new Emgu.CV.Features2D.AKAZE())
-            using (Emgu.CV.Stitching.WarperCreator warper = new SphericalWarper())
-            {
-                stitcher.SetFeaturesFinder(finder);
-                stitcher.SetWarper(warper);
-                using (VectorOfMat vm = new VectorOfMat())
-                {            
-                    Image<Bgr, byte>[] sourceImages = new Image<Bgr, byte>[2];
-                    sourceImages[0] = mat1.ToImage<Bgr , Byte>();
-                    sourceImages[1] = mat2.ToImage<Bgr, Byte>();
-
-                    if(mat1 == null || mat2 == null) return mat1;
-
-                    Mat result = new Mat();
-                    vm.Push(sourceImages);
-                    try
-                    {
-                        Application.Current.Dispatcher.Invoke(() =>
-                        {
-                            myText.Content = "before";
-                        });
-
-                        Stitcher.Status stitchStatus = stitcher.Stitch(vm, result);
-
-                        Application.Current.Dispatcher.Invoke(() =>
-                        {
-                            myText.Content = "after";
-                        });
-                        if (stitchStatus == Stitcher.Status.Ok)
-                            return result;
-                        else
-                            return mat1;
-
-
-
-                    } catch (Exception e)
-                    {
-                        return mat1;
-                    }
-                }
-            }
-        }
         private void Render_Click(object sender, RoutedEventArgs e)
         {
             Render render = new Render();
