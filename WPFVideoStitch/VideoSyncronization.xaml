@@ -7,6 +7,10 @@
         mc:Ignorable="d"
         Title="VideoSyncronization" Height="500" Width="450" ResizeMode="NoResize">
     <Grid Background="#FF2A2929">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="443*"/>
+            <ColumnDefinition Width="7*"/>
+        </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="50" />
             <RowDefinition Height="100" />
@@ -14,8 +18,8 @@
             <RowDefinition Height="200" />
             <RowDefinition Height="100" />
         </Grid.RowDefinitions>
-        <Label Content="Audio synchronization" HorizontalAlignment="Left" Margin="20,0,0,0" Grid.Row="0" VerticalAlignment="Center" Foreground="White"/>
-        <Grid Grid.Row="1">
+        <Label Content="Audio synchronization" HorizontalAlignment="Left" Margin="20,0,0,0" VerticalAlignment="Center" Foreground="White"/>
+        <Grid Grid.Row="1" Grid.ColumnSpan="2">
             <Grid.RowDefinitions>
                 <RowDefinition Height="30" />
                 <RowDefinition Height="auto" />
@@ -32,9 +36,9 @@
                 <Button Height="30" Margin="20 5" Content="Use Audio to sync Video" Click="Syncronize_Click" ></Button>
             </Grid>
         </Grid>
-        <Grid Grid.Row="3">
+        <Grid Grid.Row="3" Grid.ColumnSpan="2">
             <ListView  Height="90" Margin="0,10,0,0" 
-              VerticalAlignment="Top" x:Name="listView">
+              VerticalAlignment="Top" x:Name="listView" d:ItemsSource="{d:SampleData ItemCount=5}">
                 <ListView.View>
 
                     <GridView>
@@ -67,7 +71,7 @@
             </ListView>
         </Grid>
 
-        <Grid Grid.Row="4">
+        <Grid Grid.Row="4" Grid.ColumnSpan="2">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="10"></ColumnDefinition>
                 <ColumnDefinition Width="50"></ColumnDefinition>
@@ -79,7 +83,7 @@
                 <ColumnDefinition Width="50"></ColumnDefinition>
                 <ColumnDefinition Width="10"></ColumnDefinition>
             </Grid.ColumnDefinitions>
-            <Button Height="30" Width="50"  Grid.Column="1"  Content="Reset"  ></Button>
+            <Button Height="30" Width="50"  Grid.Column="1"  Content="Reset" Click="ReSetButton_Click"  ></Button>
             <Button Height="30" Grid.Column="3" Content="Ok"  ></Button>
             <Button Height="30" Content="Cancel" Grid.Column="5" ></Button>
             <Button Height="30" Content="Apply" Grid.Column="7" ></Button>

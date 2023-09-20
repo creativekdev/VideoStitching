@@ -8,6 +8,7 @@ using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Emgu.CV;
 
 namespace WPFVideoStitch
 {
@@ -19,6 +20,9 @@ namespace WPFVideoStitch
         public VideoMerger()
         {
             InitializeComponent();
+            pbStatus.Visibility = Visibility.Collapsed;
+            pbText.Visibility = Visibility.Collapsed;
+            outputPath.Text = Properties.Settings.Default.LastFilePath;
         }
         public class ThreadParameters
         {
@@ -28,6 +32,26 @@ namespace WPFVideoStitch
         public void CallToChildThread(Object obj)
         {
             ThreadParameters threadParams = (ThreadParameters)obj;
+
+            /*Working working = null;
+
+
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                working = new Working
+                {
+                    Owner = this
+                };
+                working.Show();
+            });*/
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                pbStatus.Visibility = Visibility.Visible;
+                pbText.Visibility = Visibility.Visible;
+                this.IsEnabled = false;
+            });
+
+
             string command = "ffmpeg";
             string arguments = " -f concat -safe 0 -i videos.txt -c copy \"" + threadParams.outputPath + "/" + threadParams.outputFilename + "\"";
             var process = new Process();
@@ -63,7 +87,7 @@ namespace WPFVideoStitch
                 //    outputList.Items.Add(ex.Message);
                 //});
                 //MessageBox.Show(ex.Message, "error!");
-                
+
             }
 
             if (process.ExitCode == 0)
@@ -94,15 +118,26 @@ namespace WPFVideoStitch
                 //{
                 //    outputList.Items.Add(message);
                 //});
-                MessageBox.Show(stdOutput.ToString(),"Error!");
+                //MessageBox.Show(stdOutput.ToString(),"Error!");
                 //throw new Exception(Format(filename, arguments) + " finished with exit code = " + process.ExitCode + ": " + message);
             }
             //outputList.Items.Dispatcher.BeginInvoke(() =>
             //{
             //    outputList.Items.Add("Finished!\n");
             //});
+            /*Application.Current.Dispatcher.Invoke(() =>
+            {
+                working.Close();
+            });*/
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                pbStatus.Visibility = Visibility.Collapsed;
+                pbText.Visibility = Visibility.Collapsed;
+                this.IsEnabled = true;
+                VideoPanel.Items.Clear();
+            });
             MessageBox.Show("Merging video has finished!", "Success!");
-            VideoPanel.Items.Clear();
+            //VideoPanel.Items.Clear();
         }
         private void Add_Videos(object sender, RoutedEventArgs e)
         {
@@ -131,8 +166,19 @@ namespace WPFVideoStitch
             File.WriteAllText("videos.txt", "");
 
             string outputFilename = "";
+            int merge_available = 1;
+            double framerate = -1;
+            double currentframelate = -1;
             foreach (var item in VideoPanel.Items)
             {
+                using (VideoCapture videoCapture = new VideoCapture(item.ToString()))
+                {
+                    currentframelate = videoCapture.Get(Emgu.CV.CvEnum.CapProp.Fps);
+                }
+
+                if (framerate == -1) framerate = currentframelate;
+                else if (Math.Abs(framerate - currentframelate) >= 0.001) merge_available = 0;
+
                 File.AppendAllText("videos.txt", "file '" + item.ToString() +"'\n");
                 if (outputFilename == "")
                 {
@@ -147,15 +193,21 @@ namespace WPFVideoStitch
             }
             //outputList.Items.Clear();
             //outputList.Items.Add("Merging...\n Please wait...");
-//            ThreadStart childref = new ThreadStart(CallToChildThread);
-            Thread childThread = new Thread(CallToChildThread);
-            childThread.Start(
+            //            ThreadStart childref = new ThreadStart(CallToChildThread);
+            if (merge_available == 1)
+            {
+                Thread childThread = new Thread(CallToChildThread);
+                childThread.Start(
                 new ThreadParameters
                 {
                     outputFilename = outputFilename,
                     outputPath = outputPath.Text
                     // Set other parameters here
                 });
+            }
+
+            else MessageBox.Show("All video files must have the exact same framerates!", "Error!");
+
 
         }
 
@@ -167,10 +219,17 @@ namespace WPFVideoStitch
         private void OutputPath_Click(object sender, RoutedEventArgs e)
         {
             System.Windows.Forms.FolderBrowserDialog openFileDlg = new System.Windows.Forms.FolderBrowserDialog();
+
+            openFileDlg.InitialDirectory = Properties.Settings.Default.LastFilePath;
+
             var result = openFileDlg.ShowDialog();
             if (result.ToString() != string.Empty)
             {
                 outputPath.Text = openFileDlg.SelectedPath;
+
+                Properties.Settings.Default.LastFilePath = openFileDlg.SelectedPath;
+
+                Properties.Settings.Default.Save();
             }
         }
         private void Sort_Click(object sender, RoutedEventArgs e)

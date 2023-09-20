@@ -137,20 +137,39 @@ namespace WPFVideoStitch
             var mfccs1 = ExtractMFCCs(left1);
             var mfccs2 = ExtractMFCCs(left2);
             float[] crossCorrelation = CalculateCrossCorrelation(mfccs1, mfccs2);
-//            ShowPlot("res", left1.Samples, left2.Samples, crossCorrelation);
+            //ShowPlot("res", left1.Samples, left2.Samples, crossCorrelation);
             // Find the index of the maximum correlation value (alignment)
             int maxIndex = Array.IndexOf(crossCorrelation, crossCorrelation.Max());
+            //int maxIndex = FindIndexOfMaximum(crossCorrelation);
+            
             // Calculate the time delay (alignment) in frames
             int timeDelayFrames = maxIndex - mfccs1.Length;
             listView.Items.Clear();
             listView.Items.Add(new MyItem { Video = left, StartTime = "0", NearestFrame = "0" });
-            listView.Items.Add(new MyItem { Video = right, StartTime = timeDelayFrames.ToString(), NearestFrame = timeDelayFrames.ToString() });
+            listView.Items.Add(new MyItem { Video = right, StartTime = ((double)timeDelayFrames/(left1.SamplingRate)).ToString(), NearestFrame = timeDelayFrames.ToString() });
             //var crossCorrelation = CalculateCrossCorrelation(mfccVectors1, mfccVectors2);
             //            var xcorr = Operation.CrossCorrelate(left1, left2);
             //            int maxIndex = Array.IndexOf(xcorr.Samples, xcorr.Samples.Max());
             //          ShowPlot("res", xcorr.Samples, xcorr.Samples, xcorr.Samples, 1000);
 
         }
+
+
+        static int FindIndexOfMaximum(float[] array)
+        {
+            int index = 0;
+            float max = array[0];
+            for (int i = 1; i < array.Length; i++)
+            {
+                if (array[i] > max)
+                {
+                    max = array[i];
+                    index = i;
+                }
+            }
+            return index;
+        }
+
         double[][] ExtractMFCCs(DiscreteSignal audioSignal)
         {
             var mfccOptions = new MfccOptions
@@ -192,13 +211,13 @@ namespace WPFVideoStitch
             double[] flatMfccs2 = mfccs2.SelectMany(row => row).ToArray();
             float[] f1 = new float[flatMfccs1.Length];
             float[] f2 = new float[flatMfccs2.Length];
-  
-            for (int i = 100; i <flatMfccs1.Length -  100; i++)
+
+            for (int i = 0; i <flatMfccs1.Length; i++)
             {
                 f1[i] = (float)flatMfccs1[i];
             }
-            for (int i = 100; i < flatMfccs2.Length - 100; i++)
-            {
+            for (int i = 0; i < flatMfccs2.Length; i++)
+            { 
                 f2[i] = (float)flatMfccs2[i];
             }
             
@@ -208,14 +227,20 @@ namespace WPFVideoStitch
 
             return res.Samples;
         }
+
+        private void ReSetButton_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
         public VideoSyncronization(String left, String right)
         {
             InitializeComponent();
             this.left = left;
             this.right = right;
             listView.Items.Clear();
-            listView.Items.Add(new MyItem { Video = left, StartTime = "0", NearestFrame = "0" });
-            listView.Items.Add(new MyItem { Video = right, StartTime = "0", NearestFrame = "0" });
+            //listView.Items.Add(new MyItem { Video = left, StartTime = "0", NearestFrame = "0" });
+            //listView.Items.Add(new MyItem { Video = right, StartTime = "0", NearestFrame = "0" });
 
         }
     }

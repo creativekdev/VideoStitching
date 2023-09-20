@@ -26,7 +26,7 @@
                     <Button
                             x:Name="ImportVideo"
                             Click="Import_Videos"
-                            Content="Import Videos" Margin="100,60,800,250" />
+                            Content="Import Videos" Margin="100,172,800,138" />
                     <Grid
                     HorizontalAlignment="Left"
                     Margin="250,10,10,10"
@@ -49,7 +49,7 @@
                         Height="300"
                         BorderBrush="White"
                         BorderThickness="2">
-                                <MediaElement x:Name="leftVideoCtl"  LoadedBehavior="Manual"  UnloadedBehavior="Stop" />
+                                <MediaElement x:Name="leftVideoCtl"  LoadedBehavior="Manual"  UnloadedBehavior="Stop" MediaOpened="leftVideoCtl_MediaOpened"/>
                             </Border>
                             <StackPanel  Grid.Row="1" Width="300" HorizontalAlignment="Center" Orientation="Horizontal">
 
@@ -58,7 +58,10 @@
 
                                 <!-- Volume slider. This slider allows a Volume range between 0 and 1. -->
 
-                                <Slider Width="250" Maximum="100" VerticalAlignment="Center" ValueChanged="Slider1_ValueChanged"/>
+                                <Slider Name="LeftSlide" Width="250" VerticalAlignment="Center" 
+                                        Maximum="{Binding ElementName=leftVideoCtl, Path=NaturalDuration.TimeSpan.TotalSeconds}"
+                                        ValueChanged="LeftSlide_ValueChanged" 
+                                        Thumb.DragStarted="LeftSlide_DragStart" Thumb.DragCompleted="LeftSlide_DragCompleted"/>
 
                             </StackPanel>
                         </Grid>
@@ -73,7 +76,7 @@
                         Height="300"
                         BorderBrush="White"
                         BorderThickness="2">
-                                <MediaElement  x:Name="rightVideoCtl"  LoadedBehavior="Manual"  UnloadedBehavior="Stop"/>
+                                <MediaElement  x:Name="rightVideoCtl"  LoadedBehavior="Manual"  UnloadedBehavior="Stop" MediaOpened="rightVideoCtl_MediaOpened"/>
                             </Border>
                             <StackPanel  Grid.Row="1" Width="300" HorizontalAlignment="Center" Orientation="Horizontal">
 
@@ -82,7 +85,10 @@
 
                                 <!-- Volume slider. This slider allows a Volume range between 0 and 1. -->
 
-                                <Slider Width="250" Maximum="100" VerticalAlignment="Center"/>
+                                <Slider Name="RightSlide" Width="250" VerticalAlignment="Center" 
+                                        Maximum="{Binding ElementName=rightVideoCtl, Path=NaturalDuration.TimeSpan.TotalSeconds}" 
+                                        ValueChanged="RightSlide_ValueChanged"
+                                        Thumb.DragStarted="RightSlide_DragStart" Thumb.DragCompleted="RightSlide_DragCompleted"/>
 
                             </StackPanel>
 
@@ -91,25 +97,25 @@
                     </Grid>
 
                 </Grid>
-                <Grid Grid.Row="1">
+                <Grid Grid.Row="1" Margin="0,0,0,-22">
                     <Button
                             x:Name="Synchronization"
-                            Margin="100,40,800,260"
+                            Margin="100,40,800,282"
                             Click="Synchronization_Click"
                             Content="Synchronization"/>
                     <Button
                             x:Name="Stitch"
-                            Margin="100,140,800,160"
+                            Margin="100,120,800,203"
 
                             Click="Stitch_Click"
                             Content="Stitch" />
                     <Button
                             x:Name="Render"
-                            Margin="100,240,800,60"
+                            Margin="100,198,800,124"
                         
                             Click="Render_Click"
                             Content="Render" />
-                    <Grid  >
+                    <Grid Margin="0,0,0,-20"  >
                         <Grid.RowDefinitions>
                             <RowDefinition Height="auto"></RowDefinition>
                             <RowDefinition Height="50"></RowDefinition>
@@ -119,20 +125,42 @@
                         Height="300"
                         BorderBrush="White"
                         BorderThickness="2" Margin="250,0,149,0">
-                            <Image  x:Name="mergedVideoCtl"/>
+                            <Canvas>
+                                <!-- MediaElement -->
+                                <MediaElement x:Name="mergedVideoCtl"  LoadedBehavior="Manual"  UnloadedBehavior="Stop" MediaOpened="mergedVideoCtl_MediaOpened"
+                                    Canvas.Left="0" Canvas.Top="0" Width="625" Height="300"/>
+
+                                <!-- Image -->
+                                <Image  x:Name="mergedImage" Canvas.Left="0" Canvas.Top="0"  Width="625" Height="300"/>
+                            </Canvas>
+
+
                         </Border>
-                        <Slider Grid.Row="1" Maximum="100" VerticalAlignment="Center" Margin="270,0,153,0"/>
+                        <StackPanel  Grid.Row="1" Width="656" Orientation="Horizontal" Margin="234,0,134,6">
+
+                            <!-- Play button. -->
+                            <Image Source="images\pause.png" Margin="12"  MouseDown="OnMouseDownPause1Media"/>
+                            <Slider x:Name="CenterSlide" Width="602" Height="22" 
+                                    Maximum="{Binding ElementName=mergedVideoCtl, Path=NaturalDuration.TimeSpan.TotalSeconds}" 
+                                    ValueChanged="CenterSlide_ValueChanged" 
+                                    Thumb.DragStarted="CenterSlide_DragStart" Thumb.DragCompleted="CenterSlide_DragCompleted"/>
+
+                            <!-- Volume slider. This slider allows a Volume range between 0 and 1. -->
+
+                        </StackPanel>
 
                     </Grid>
                 </Grid>
-
             </Grid>
 
         </DockPanel>
         <Button
             x:Name="Synchronization_Copy"
-            Margin="100,160,800,150"
+            Margin="100,64,800,246"
             Click="VideoMerger_Click"
             Content="Merge" Grid.ColumnSpan="2"/>
+        <ProgressBar Style="{DynamicResource ProgressBarStyleforMerge}" Minimum="0" Maximum="100" x:Name="stStatus" Margin="68,341,0,19" Grid.ColumnSpan="2" Grid.Row="1" HorizontalAlignment="Left" Width="868" />
+        <TextBlock Text="{Binding ElementName=stStatus, Path=Value, StringFormat={}{0:0}%}"
+                   x:Name="stText" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="802,333,0,0" Grid.Column="1" Grid.Row="1" Foreground="White" />
     </Grid>
 </Window>
