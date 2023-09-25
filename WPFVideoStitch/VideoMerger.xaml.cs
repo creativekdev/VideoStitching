@@ -188,7 +188,6 @@ namespace WPFVideoStitch
                     {
                         outputFilename = Path.GetFileNameWithoutExtension(item.ToString()) + "_merged" + "(" + k++ + ")" + ".mp4";
                     }
-
                 }
             }
             //outputList.Items.Clear();
@@ -210,7 +209,6 @@ namespace WPFVideoStitch
 
 
         }
-
 
         private void ListClear_Click(object sender, RoutedEventArgs e)
         {

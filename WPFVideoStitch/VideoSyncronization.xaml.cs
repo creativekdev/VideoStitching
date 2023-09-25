@@ -31,15 +31,37 @@ using OxyPlot;
 using OxyPlot.WindowsForms;
 using System.ComponentModel;
 using System.Windows.Forms;
+using Emgu.CV;
+using Emgu.CV.Features2D;
 
 namespace WPFVideoStitch
 {
     /// <summary>
     /// Interaction logic for VideoSyncronization.xaml
     /// </summary>
+    /// 
+
+    public class MyEventArgs : EventArgs
+    {
+        public int FrameCount { get; }
+
+        public MyEventArgs(int frameCount)
+        {
+            FrameCount = frameCount;
+        }
+    }
+
     public partial class VideoSyncronization : Window
     {
         String left, right;
+
+        public event EventHandler<MyEventArgs> MyEvent;
+
+        int frameCount = 0;
+
+        double frameRate = 0;
+
+        int totalTimeLength = 0;//sec
 
         void ShowPlot(string str, float[] values1, float[] values2, float[] values3, int step)
         {
@@ -141,12 +163,36 @@ namespace WPFVideoStitch
             // Find the index of the maximum correlation value (alignment)
             int maxIndex = Array.IndexOf(crossCorrelation, crossCorrelation.Max());
             //int maxIndex = FindIndexOfMaximum(crossCorrelation);
-            
+
             // Calculate the time delay (alignment) in frames
             int timeDelayFrames = maxIndex - mfccs1.Length;
-            listView.Items.Clear();
-            listView.Items.Add(new MyItem { Video = left, StartTime = "0", NearestFrame = "0" });
-            listView.Items.Add(new MyItem { Video = right, StartTime = ((double)timeDelayFrames/(left1.SamplingRate)).ToString(), NearestFrame = timeDelayFrames.ToString() });
+            //listView.Items.Clear();
+            if (timeDelayFrames < 0)
+            {
+                //    listView.Items.Add(new MyItem { Video = left, StartTime = "0", NearestFrame = "0" });
+                //            listView.Items.Add(new MyItem { Video = right, StartTime = ((double)timeDelayFrames*8).ToString("0.00"), NearestFrame = timeDelayFrames.ToString() });
+                //    listView.Items.Add(new MyItem { Video = right, StartTime = ((int)(-timeDelayFrames * left1.Duration * 1000 / mfccs1.Length)).ToString(), NearestFrame = ((int)(-timeDelayFrames * left1.Duration / mfccs1.Length * frameRate)).ToString() });
+
+
+                firstVideoFrame.Text = "0";
+                firstVideoSecond.Text = "0ms";
+                secondVideoFrame.Text = ((int)(-timeDelayFrames * left1.Duration / mfccs1.Length * frameRate)).ToString();
+                secondVideoSecond.Text = ((int)(-timeDelayFrames * left1.Duration * 1000 / mfccs1.Length)).ToString() + "ms";
+            }
+            
+            else
+            {
+            //    listView.Items.Add(new MyItem { Video = right, StartTime = ((int)(timeDelayFrames * left1.Duration * 1000 / mfccs1.Length)).ToString(), NearestFrame = ((int)(timeDelayFrames * left1.Duration / mfccs1.Length * frameRate)).ToString() });
+            //    listView.Items.Add(new MyItem { Video = left, StartTime = "0", NearestFrame = "0" });
+                //            listView.Items.Add(new MyItem { Video = right, StartTime = ((double)timeDelayFrames*8).ToString("0.00"), NearestFrame = timeDelayFrames.ToString() });
+ 
+                firstVideoFrame.Text = ((int)(timeDelayFrames * left1.Duration / mfccs1.Length * frameRate)).ToString();
+                firstVideoSecond.Text = ((int)(timeDelayFrames * left1.Duration * 1000 / mfccs1.Length)).ToString() + "ms";
+                secondVideoFrame.Text = "0";
+                secondVideoSecond.Text = "0ms";
+            }
+
+            frameCount = (int)(timeDelayFrames * left1.Duration / mfccs1.Length * frameRate);
             //var crossCorrelation = CalculateCrossCorrelation(mfccVectors1, mfccVectors2);
             //            var xcorr = Operation.CrossCorrelate(left1, left2);
             //            int maxIndex = Array.IndexOf(xcorr.Samples, xcorr.Samples.Max());
@@ -177,7 +223,7 @@ namespace WPFVideoStitch
                 SamplingRate = audioSignal.SamplingRate,
                 FeatureCount = 1,
                 FrameDuration = 0.032/*sec*/,
-                HopDuration = 0.015/*sec*/,
+                HopDuration = 0.015/*sec*/, 
                 FilterBankSize = 26,
                 PreEmphasis = 0.97,
                 //...unspecified parameters will have default values 
@@ -230,7 +276,68 @@ namespace WPFVideoStitch
 
         private void ReSetButton_Click(object sender, RoutedEventArgs e)
         {
+            firstVideoFrame.Text = "0";
+            secondVideoFrame.Text = "0";
+            secondVideoSecond.Text = "0ms";
+            firstVideoSecond.Text = "0ms";
+            //    listView.Items.Clear();
+            //    listView.Items.Add(new MyItem { Video = left, StartTime = "0", NearestFrame = "0" });
+            //    listView.Items.Add(new MyItem { Video = right, StartTime = "0", NearestFrame = "0" });
+        }
 
+        private void OKButton_Click(object sender, RoutedEventArgs e)
+        {
+
+            frameCount = int.Parse(firstVideoFrame.Text) - int.Parse(secondVideoFrame.Text);
+            MyEvent?.Invoke(this, new MyEventArgs(frameCount));
+            this.Close();
+        }
+
+        private void CancleButton_Click(object sender, RoutedEventArgs e)
+        {
+            this.Close();
+        }
+
+        private void ApplyButton_Click(object sender, RoutedEventArgs e)
+        {
+            frameCount = int.Parse(firstVideoFrame.Text) - int.Parse(secondVideoFrame.Text);
+            MyEvent?.Invoke(this, new MyEventArgs(frameCount));
+        }
+
+        private void TextBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
+        {
+            // Check if the input is a valid number
+            if (!IsNumeric(e.Text))
+            {
+                e.Handled = true; // Mark the event as handled to prevent the input from being processed
+            }
+        }
+
+        private bool IsNumeric(string input)
+        {
+            return int.TryParse(input, out _); // Try to parse the input as an integer
+        }
+
+        private void firstVideoFrame_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (firstVideoFrame.Text == "")
+            {
+                firstVideoFrame.Text = "0";
+                firstVideoSecond.Text = "0ms";
+            }
+            else
+                firstVideoSecond.Text = ((int)(1000 / frameRate * (int.Parse(firstVideoFrame.Text)))).ToString() + "ms";
+        }
+
+        private void secondVideoFrame_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (secondVideoFrame.Text == "")
+            {
+                secondVideoFrame.Text = "0";
+                secondVideoSecond.Text = "0ms";
+            }
+            else
+                secondVideoSecond.Text = ((int)(1000 / frameRate * (int.Parse(secondVideoFrame.Text)))).ToString() + "ms";
         }
 
         public VideoSyncronization(String left, String right)
@@ -238,10 +345,23 @@ namespace WPFVideoStitch
             InitializeComponent();
             this.left = left;
             this.right = right;
-            listView.Items.Clear();
+            //listView.Items.Clear();
+
+            firstVideoName.Text = System.IO.Path.GetFileName(left);
+            secondVideoName.Text = System.IO.Path.GetFileName(right);
+
+            firstVideoFrame.Text = "0";
+            secondVideoFrame.Text = "0";
+            secondVideoSecond.Text = "0ms";
+            firstVideoSecond.Text = "0ms";
+
+
+            using (VideoCapture videoCapture = new VideoCapture(left))
+            {
+                this.frameRate = videoCapture.Get(Emgu.CV.CvEnum.CapProp.Fps);
+            }
             //listView.Items.Add(new MyItem { Video = left, StartTime = "0", NearestFrame = "0" });
             //listView.Items.Add(new MyItem { Video = right, StartTime = "0", NearestFrame = "0" });
-
         }
     }
     public class MyItem
