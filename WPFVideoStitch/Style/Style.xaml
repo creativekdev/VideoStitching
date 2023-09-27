@@ -78,7 +78,7 @@
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
                         <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"/>
-                        <Rectangle x:Name="PART_Track"/>
+                        <Rectangle x:Name="PART_Track" Height="25" />
                         <Grid x:Name="PART_Indicator" ClipToBounds="true" HorizontalAlignment="Left">
                             <Rectangle x:Name="Indicator" Fill="{TemplateBinding Foreground}"/>
                             <Rectangle x:Name="Animation" Fill="{TemplateBinding Foreground}" RenderTransformOrigin="0.5,0.5">

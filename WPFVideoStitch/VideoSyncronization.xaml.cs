@@ -51,11 +51,19 @@ namespace WPFVideoStitch
         }
     }
 
+    public class CloseEventArgs : EventArgs
+    {
+        public CloseEventArgs()
+        {
+        }
+    }
+
     public partial class VideoSyncronization : Window
     {
         String left, right;
 
         public event EventHandler<MyEventArgs> MyEvent;
+        public event EventHandler<CloseEventArgs> CloseEvent;
 
         int frameCount = 0;
 
@@ -138,6 +146,18 @@ namespace WPFVideoStitch
         }
         private void Syncronize_Click(object sender, RoutedEventArgs e)
         {
+            System.Threading.Thread calculate = new System.Threading.Thread(Calculate);
+            calculate.Start();
+        }
+
+        private void Calculate()
+        {
+
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            {
+                stStatus.Visibility = Visibility.Visible;
+                this.IsEnabled = false;
+            });
 
             WaveFile waveContainer1;
             using (var stream = new FileStream("left.wav", System.IO.FileMode.Open))
@@ -174,22 +194,27 @@ namespace WPFVideoStitch
                 //    listView.Items.Add(new MyItem { Video = right, StartTime = ((int)(-timeDelayFrames * left1.Duration * 1000 / mfccs1.Length)).ToString(), NearestFrame = ((int)(-timeDelayFrames * left1.Duration / mfccs1.Length * frameRate)).ToString() });
 
 
-                firstVideoFrame.Text = "0";
-                firstVideoSecond.Text = "0ms";
-                secondVideoFrame.Text = ((int)(-timeDelayFrames * left1.Duration / mfccs1.Length * frameRate)).ToString();
-                secondVideoSecond.Text = ((int)(-timeDelayFrames * left1.Duration * 1000 / mfccs1.Length)).ToString() + "ms";
+                System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                {
+                    firstVideoFrame.Text = "0";
+                    firstVideoSecond.Text = "0ms";
+                    secondVideoFrame.Text = ((int)(-timeDelayFrames * left1.Duration / mfccs1.Length * frameRate)).ToString();
+                    secondVideoSecond.Text = ((int)(-timeDelayFrames * left1.Duration * 1000 / mfccs1.Length)).ToString() + "ms";
+                });
             }
-            
+
             else
             {
-            //    listView.Items.Add(new MyItem { Video = right, StartTime = ((int)(timeDelayFrames * left1.Duration * 1000 / mfccs1.Length)).ToString(), NearestFrame = ((int)(timeDelayFrames * left1.Duration / mfccs1.Length * frameRate)).ToString() });
-            //    listView.Items.Add(new MyItem { Video = left, StartTime = "0", NearestFrame = "0" });
+                //    listView.Items.Add(new MyItem { Video = right, StartTime = ((int)(timeDelayFrames * left1.Duration * 1000 / mfccs1.Length)).ToString(), NearestFrame = ((int)(timeDelayFrames * left1.Duration / mfccs1.Length * frameRate)).ToString() });
+                //    listView.Items.Add(new MyItem { Video = left, StartTime = "0", NearestFrame = "0" });
                 //            listView.Items.Add(new MyItem { Video = right, StartTime = ((double)timeDelayFrames*8).ToString("0.00"), NearestFrame = timeDelayFrames.ToString() });
- 
-                firstVideoFrame.Text = ((int)(timeDelayFrames * left1.Duration / mfccs1.Length * frameRate)).ToString();
-                firstVideoSecond.Text = ((int)(timeDelayFrames * left1.Duration * 1000 / mfccs1.Length)).ToString() + "ms";
-                secondVideoFrame.Text = "0";
-                secondVideoSecond.Text = "0ms";
+                System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                {
+                    firstVideoFrame.Text = ((int)(timeDelayFrames * left1.Duration / mfccs1.Length * frameRate)).ToString();
+                    firstVideoSecond.Text = ((int)(timeDelayFrames * left1.Duration * 1000 / mfccs1.Length)).ToString() + "ms";
+                    secondVideoFrame.Text = "0";
+                    secondVideoSecond.Text = "0ms";
+                });
             }
 
             frameCount = (int)(timeDelayFrames * left1.Duration / mfccs1.Length * frameRate);
@@ -198,6 +223,11 @@ namespace WPFVideoStitch
             //            int maxIndex = Array.IndexOf(xcorr.Samples, xcorr.Samples.Max());
             //          ShowPlot("res", xcorr.Samples, xcorr.Samples, xcorr.Samples, 1000);
 
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            {
+                stStatus.Visibility = Visibility.Collapsed;
+                this.IsEnabled = true;
+            });
         }
 
 
@@ -295,6 +325,7 @@ namespace WPFVideoStitch
 
         private void CancleButton_Click(object sender, RoutedEventArgs e)
         {
+            CloseEvent?.Invoke(this , new CloseEventArgs());
             this.Close();
         }
 
@@ -354,6 +385,8 @@ namespace WPFVideoStitch
             secondVideoFrame.Text = "0";
             secondVideoSecond.Text = "0ms";
             firstVideoSecond.Text = "0ms";
+
+            stStatus.Visibility = Visibility.Collapsed;
 
 
             using (VideoCapture videoCapture = new VideoCapture(left))

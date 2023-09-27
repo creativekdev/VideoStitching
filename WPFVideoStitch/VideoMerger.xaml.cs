@@ -53,6 +53,8 @@ namespace WPFVideoStitch
 
 
             string command = "ffmpeg";
+//            string arguments = " -f concat -safe 0 -i videos.txt -vf \"setpts=1.0*PTS\" -c:v libx264 -crf 18 -c:a aac -b:a 192k -r 25 -c copy \"" + threadParams.outputPath + "/" + threadParams.outputFilename + "\" -report";
+
             string arguments = " -f concat -safe 0 -i videos.txt -c copy \"" + threadParams.outputPath + "/" + threadParams.outputFilename + "\"";
             var process = new Process();
 
