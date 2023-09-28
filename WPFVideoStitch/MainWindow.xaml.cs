@@ -294,20 +294,6 @@ namespace WPFVideoStitch
         {
             while (mergedThreadRunning)
             {
-                /*                if (LeftSlidePlayStatus == true && leftVideoSlideValue < (lefttotalframecount - 1))
-                                {
-                                    if (leftVideoSlideValue == (lefttotalframecount - 2)) LeftSlidePlayStatus = false;
-                                    leftVideoSlideValue += 1;
-                                    leftCapture.Read(leftMat);
-                                    Application.Current.Dispatcher.Invoke(() =>
-                                    {
-                                        LeftSlide.Value = leftVideoSlideValue;
-                                        Mat showing_mat = new Mat();
-                                        CvInvoke.Resize(leftMat, showing_mat, new System.Drawing.Size(800, 600));
-                                        leftVideoCtl.Source = ToBitmapSource(showing_mat.ToImage<Bgr, byte>());
-                                    });
-                                }
-                                System.Threading.Thread.Sleep(30);*/
                 using (VectorOfMat vm = new VectorOfMat())
                 {
                     vm.Push(leftMat);
@@ -355,6 +341,11 @@ namespace WPFVideoStitch
             openFileDialog.Multiselect = true;
             openFileDialog.Filter = "Video files (*.mp4)|*.mp4|Video files (*.avi)|*.avi|All files (*.*)|*.*";
             openFileDialog.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+
+            leftThreadRunning = false;
+            rightThreadRunning = false;
+
+
             if (openFileDialog.ShowDialog() == true)
             {
                 int i = 0;

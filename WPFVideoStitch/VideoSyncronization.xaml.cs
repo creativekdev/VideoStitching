@@ -179,21 +179,10 @@ namespace WPFVideoStitch
             var mfccs1 = ExtractMFCCs(left1);
             var mfccs2 = ExtractMFCCs(left2);
             float[] crossCorrelation = CalculateCrossCorrelation(mfccs1, mfccs2);
-            //ShowPlot("res", left1.Samples, left2.Samples, crossCorrelation);
-            // Find the index of the maximum correlation value (alignment)
             int maxIndex = Array.IndexOf(crossCorrelation, crossCorrelation.Max());
-            //int maxIndex = FindIndexOfMaximum(crossCorrelation);
-
-            // Calculate the time delay (alignment) in frames
             int timeDelayFrames = maxIndex - mfccs1.Length;
-            //listView.Items.Clear();
             if (timeDelayFrames < 0)
             {
-                //    listView.Items.Add(new MyItem { Video = left, StartTime = "0", NearestFrame = "0" });
-                //            listView.Items.Add(new MyItem { Video = right, StartTime = ((double)timeDelayFrames*8).ToString("0.00"), NearestFrame = timeDelayFrames.ToString() });
-                //    listView.Items.Add(new MyItem { Video = right, StartTime = ((int)(-timeDelayFrames * left1.Duration * 1000 / mfccs1.Length)).ToString(), NearestFrame = ((int)(-timeDelayFrames * left1.Duration / mfccs1.Length * frameRate)).ToString() });
-
-
                 System.Windows.Application.Current.Dispatcher.Invoke(() =>
                 {
                     firstVideoFrame.Text = "0";
@@ -205,9 +194,6 @@ namespace WPFVideoStitch
 
             else
             {
-                //    listView.Items.Add(new MyItem { Video = right, StartTime = ((int)(timeDelayFrames * left1.Duration * 1000 / mfccs1.Length)).ToString(), NearestFrame = ((int)(timeDelayFrames * left1.Duration / mfccs1.Length * frameRate)).ToString() });
-                //    listView.Items.Add(new MyItem { Video = left, StartTime = "0", NearestFrame = "0" });
-                //            listView.Items.Add(new MyItem { Video = right, StartTime = ((double)timeDelayFrames*8).ToString("0.00"), NearestFrame = timeDelayFrames.ToString() });
                 System.Windows.Application.Current.Dispatcher.Invoke(() =>
                 {
                     firstVideoFrame.Text = ((int)(timeDelayFrames * left1.Duration / mfccs1.Length * frameRate)).ToString();
@@ -218,11 +204,6 @@ namespace WPFVideoStitch
             }
 
             frameCount = (int)(timeDelayFrames * left1.Duration / mfccs1.Length * frameRate);
-            //var crossCorrelation = CalculateCrossCorrelation(mfccVectors1, mfccVectors2);
-            //            var xcorr = Operation.CrossCorrelate(left1, left2);
-            //            int maxIndex = Array.IndexOf(xcorr.Samples, xcorr.Samples.Max());
-            //          ShowPlot("res", xcorr.Samples, xcorr.Samples, xcorr.Samples, 1000);
-
             System.Windows.Application.Current.Dispatcher.Invoke(() =>
             {
                 stStatus.Visibility = Visibility.Collapsed;
@@ -256,19 +237,15 @@ namespace WPFVideoStitch
                 HopDuration = 0.015/*sec*/, 
                 FilterBankSize = 26,
                 PreEmphasis = 0.97,
-                //...unspecified parameters will have default values 
             };
-            // Create an MFCC feature extractor
             var mfccExtractor = new MfccExtractor(mfccOptions);
 
             // Compute MFCCs from the audio signal
             float[][] res= mfccExtractor.ComputeFrom(audioSignal).ToArray();
-            // Create a new double[][] array with the same dimensions
             int numRows = res.Length;
             int numCols = res[0].Length;
             double[][] doubleArray = new double[numRows][];
 
-            // Iterate through the floatArray and convert to doubleArray
             for (int i = 0; i < numRows; i++)
             {
                 doubleArray[i] = new double[numCols]; // Initialize sub-array
@@ -282,7 +259,6 @@ namespace WPFVideoStitch
         }
         float[] CalculateCrossCorrelation(double[][] mfccs1, double[][] mfccs2)
         {
-            // Convert 2D MFCC arrays into 1D arrays
             double[] flatMfccs1 = mfccs1.SelectMany(row => row).ToArray();
             double[] flatMfccs2 = mfccs2.SelectMany(row => row).ToArray();
             float[] f1 = new float[flatMfccs1.Length];
@@ -299,7 +275,6 @@ namespace WPFVideoStitch
             
             int n = flatMfccs1.Length + flatMfccs2.Length - 1;
             DiscreteSignal res = Operation.CrossCorrelate(new DiscreteSignal(1,f1), new DiscreteSignal(1, f2));
-//            ShowPlot("res", f1, f2, res.Samples,1);
 
             return res.Samples;
         }
@@ -310,9 +285,6 @@ namespace WPFVideoStitch
             secondVideoFrame.Text = "0";
             secondVideoSecond.Text = "0ms";
             firstVideoSecond.Text = "0ms";
-            //    listView.Items.Clear();
-            //    listView.Items.Add(new MyItem { Video = left, StartTime = "0", NearestFrame = "0" });
-            //    listView.Items.Add(new MyItem { Video = right, StartTime = "0", NearestFrame = "0" });
         }
 
         private void OKButton_Click(object sender, RoutedEventArgs e)
@@ -393,8 +365,6 @@ namespace WPFVideoStitch
             {
                 this.frameRate = videoCapture.Get(Emgu.CV.CvEnum.CapProp.Fps);
             }
-            //listView.Items.Add(new MyItem { Video = left, StartTime = "0", NearestFrame = "0" });
-            //listView.Items.Add(new MyItem { Video = right, StartTime = "0", NearestFrame = "0" });
         }
     }
     public class MyItem
