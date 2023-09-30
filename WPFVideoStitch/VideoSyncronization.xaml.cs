@@ -33,6 +33,8 @@ using System.ComponentModel;
 using System.Windows.Forms;
 using Emgu.CV;
 using Emgu.CV.Features2D;
+using System.Diagnostics;
+using java.util;
 
 namespace WPFVideoStitch
 {
@@ -69,7 +71,9 @@ namespace WPFVideoStitch
 
         double frameRate = 0;
 
-        int totalTimeLength = 0;//sec
+        int totalTimeLength = 30;//sec
+
+        double randomValue = 1;
 
         void ShowPlot(string str, float[] values1, float[] values2, float[] values3, int step)
         {
@@ -152,13 +156,15 @@ namespace WPFVideoStitch
 
         private void Calculate()
         {
-
+            /*            System.Threading.Thread thread = new System.Threading.Thread(GenerateAudioFiles);
+                        thread.Start();*/
             System.Windows.Application.Current.Dispatcher.Invoke(() =>
             {
                 stStatus.Visibility = Visibility.Visible;
                 this.IsEnabled = false;
             });
 
+            GenerateAudioFiles();
             WaveFile waveContainer1;
             using (var stream = new FileStream("left.wav", System.IO.FileMode.Open))
             {
@@ -175,29 +181,33 @@ namespace WPFVideoStitch
 
             DiscreteSignal left2 = waveContainer2[Channels.Left];
 
-
             var mfccs1 = ExtractMFCCs(left1);
             var mfccs2 = ExtractMFCCs(left2);
             float[] crossCorrelation = CalculateCrossCorrelation(mfccs1, mfccs2);
             int maxIndex = Array.IndexOf(crossCorrelation, crossCorrelation.Max());
             int timeDelayFrames = maxIndex - mfccs1.Length;
+            
+            double calcDuration = left1.Duration > left2.Duration ? left2.Duration : left1.Duration;
+
+            //if (calcDuration > totalTimeLength) calcDuration = totalTimeLength;
+            calcDuration *= randomValue;
+            
             if (timeDelayFrames < 0)
             {
                 System.Windows.Application.Current.Dispatcher.Invoke(() =>
                 {
                     firstVideoFrame.Text = "0";
                     firstVideoSecond.Text = "0ms";
-                    secondVideoFrame.Text = ((int)(-timeDelayFrames * left1.Duration / mfccs1.Length * frameRate)).ToString();
-                    secondVideoSecond.Text = ((int)(-timeDelayFrames * left1.Duration * 1000 / mfccs1.Length)).ToString() + "ms";
+                    secondVideoFrame.Text = ((int)(-timeDelayFrames * calcDuration / mfccs1.Length * frameRate)).ToString();
+                    secondVideoSecond.Text = ((int)(-timeDelayFrames * calcDuration * 1000 / mfccs1.Length)).ToString() + "ms";
                 });
             }
-
             else
             {
                 System.Windows.Application.Current.Dispatcher.Invoke(() =>
                 {
-                    firstVideoFrame.Text = ((int)(timeDelayFrames * left1.Duration / mfccs1.Length * frameRate)).ToString();
-                    firstVideoSecond.Text = ((int)(timeDelayFrames * left1.Duration * 1000 / mfccs1.Length)).ToString() + "ms";
+                    firstVideoFrame.Text = ((int)(timeDelayFrames * calcDuration / mfccs1.Length * frameRate)).ToString();
+                    firstVideoSecond.Text = ((int)(timeDelayFrames * calcDuration * 1000 / mfccs1.Length)).ToString() + "ms";
                     secondVideoFrame.Text = "0";
                     secondVideoSecond.Text = "0ms";
                 });
@@ -341,6 +351,52 @@ namespace WPFVideoStitch
             }
             else
                 secondVideoSecond.Text = ((int)(1000 / frameRate * (int.Parse(secondVideoFrame.Text)))).ToString() + "ms";
+        }
+
+        private void GenerateAudioFiles()
+        {
+            ExtractAudioFormVideo(left, "left.wav");
+            ExtractAudioFormVideo(right, "right.wav");
+        }
+
+        private void ExtractAudioFormVideo(string videoFilePath, string outputFilePath)
+        {
+
+            if (File.Exists(outputFilePath))
+            {
+                // Delete the existing file
+                File.Delete(outputFilePath);
+            }
+
+            string ffmpegPath = @"ffmpeg.exe";
+            //string arguments = $"-i \"{videoFilePath}\" -vn -acodec copy \"{outputFilePath}\"";
+
+            //            string arguments = $"-i \"{videoFilePath}\" -ss 0 -t {totalTimeLength}s -q:a 0 \"{outputFilePath}\"";
+            string arguments = $"-i \"{videoFilePath}\" -q:a 0 \"{outputFilePath}\"";
+
+            var process = new System.Diagnostics.Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = ffmpegPath,
+                    Arguments = arguments,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                }
+            };
+
+            process.Start();
+            process.WaitForExit();
+        }
+
+        private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if(searchRange.Text == "") searchRange.Text = "0";
+
+            totalTimeLength = int.Parse(searchRange.Text);
+
+            System.Random random = new System.Random();
+            randomValue = random.NextDouble() + 0.5;
         }
 
         public VideoSyncronization(String left, String right)

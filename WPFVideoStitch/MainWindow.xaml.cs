@@ -44,7 +44,6 @@ namespace WPFVideoStitch
 
         bool have_transform = false;
 
-
         bool LeftSlideDraggingFlag = false;
         bool RightSlideDraggingFlag = false;
         bool CenteralSlideDraggingFlag = false;
@@ -235,12 +234,6 @@ namespace WPFVideoStitch
             image.Source = bitmapImage;
         }
 
-        private void GenerateAudioFiles()
-        {
-            ExtractAudioFormVideo(leftVideo, "left.wav");
-            ExtractAudioFormVideo(rightVideo, "right.wav");
-        }
-
         private void ShowLeftVideo()
         {
             while(leftThreadRunning)
@@ -313,27 +306,6 @@ namespace WPFVideoStitch
                 }
             }
         }
-        private void ExtractAudioFormVideo(string videoFilePath , string outputFilePath)
-        {
-            string ffmpegPath = @"ffmpeg.exe";
-            //string arguments = $"-i \"{videoFilePath}\" -vn -acodec copy \"{outputFilePath}\"";
-
-            string arguments = $"-i \"{videoFilePath}\" -vn -acodec  pcm_s16le -ar 44100 -ac 2 \"{outputFilePath}\"";
-
-            var process = new System.Diagnostics.Process
-            {
-                StartInfo = new ProcessStartInfo
-                {
-                    FileName = ffmpegPath,
-                    Arguments = arguments,
-                    UseShellExecute = false,
-                    CreateNoWindow = true
-                }
-            };
-
-            process.Start();
-            process.WaitForExit();
-        }
 
         private void Import_Videos(object sender, RoutedEventArgs e)
         {
@@ -355,12 +327,6 @@ namespace WPFVideoStitch
                     if (i == 1)
                     {
                         leftVideo = file;
-
-                        if (File.Exists("left.wav"))
-                        {
-                            // Delete the existing file
-                            File.Delete("left.wav");
-                        }
                         //ExtractAudioFormVideo(file, "left.wav");
                         
                         
@@ -433,8 +399,6 @@ namespace WPFVideoStitch
                         System.Threading.Thread right = new System.Threading.Thread(ShowRightVideo);
                         right.Start();
 
-                        System.Threading.Thread thread = new System.Threading.Thread(GenerateAudioFiles);
-                        thread.Start();
                     }
                 }
             }
@@ -646,11 +610,7 @@ namespace WPFVideoStitch
                         Synchronization.Visibility = Visibility.Visible;
                         Stitch.Visibility = Visibility.Visible;
                         Render.Visibility = Visibility.Visible;
-
-                        System.Threading.Thread thread = new System.Threading.Thread(GenerateAudioFiles);
-                        thread.Start();
                     }
-
                 }
             }
         }
@@ -714,8 +674,6 @@ namespace WPFVideoStitch
                         Synchronization.Visibility = Visibility.Visible;
                         Stitch.Visibility = Visibility.Visible;
                         Render.Visibility = Visibility.Visible;
-                        System.Threading.Thread thread = new System.Threading.Thread(GenerateAudioFiles);
-                        thread.Start();
                     }
 
                 }
@@ -729,6 +687,10 @@ namespace WPFVideoStitch
                 stStatus.Visibility = Visibility.Visible;
                 stStatus.IsIndeterminate = true;
                 this.IsEnabled = false;
+
+
+                LeftSlidePlayStatus = false;
+                RightSlidePlayStatus = false;
             });
 
             using (Emgu.CV.Features2D.AKAZE finder = new Emgu.CV.Features2D.AKAZE())
@@ -739,15 +701,35 @@ namespace WPFVideoStitch
                 using (VectorOfMat firstVM = new VectorOfMat())
                 using (Mat resultMat = new Mat())
                 {
-                    Image<Bgr, byte>[] sourceImages = new Image<Bgr, byte>[2];
-                    sourceImages[0] = new Image<Bgr, byte>("left.jpg");
-                    sourceImages[1] = new Image<Bgr, byte>("right.jpg");
 
-                    firstVM.Push(sourceImages);
 
-                    Stitcher.Status status = stitcher.EstimateTransform(firstVM);
 
-                    status = stitcher.ComposePanorama(firstVM, resultMat);
+                    /*                    Image<Bgr, byte>[] sourceImages = new Image<Bgr, byte>[2];
+                                        sourceImages[0] = new Image<Bgr, byte>("left.jpg");
+                                        sourceImages[1] = new Image<Bgr, byte>("right.jpg");*/
+                    //firstVM.Push(sourceImages);
+
+                    leftCapture.Set(Emgu.CV.CvEnum.CapProp.PosFrames, lefttotalframecount/2);
+                    rightCapture.Set(Emgu.CV.CvEnum.CapProp.PosFrames, lefttotalframecount/2 - frameCount);
+
+                    while(leftCapture.IsOpened && rightCapture.IsOpened)
+                    {
+
+                        leftCapture.Read(leftMat);
+                        rightCapture.Read(rightMat);
+
+                        firstVM.Clear();
+
+                        firstVM.Push(leftMat);
+                        firstVM.Push(rightMat);
+
+                        Stitcher.Status status = stitcher.EstimateTransform(firstVM);
+
+                        status = stitcher.ComposePanorama(firstVM, resultMat);
+
+                        if (status == Stitcher.Status.Ok)
+                            break;
+                    }
 
                     Application.Current.Dispatcher.Invoke(() =>
                     {
@@ -757,9 +739,6 @@ namespace WPFVideoStitch
                         stStatus.Value = leftVideoSlideValue;
                         mergedImage.Source = ToBitmapSource(resultMat.ToImage<Bgr, byte>());
                     });
-
-                    LeftSlidePlayStatus = false;
-                    RightSlidePlayStatus = false;
 
                     while (leftCapture.IsOpened && rightCapture.IsOpened)
                     {
@@ -777,7 +756,7 @@ namespace WPFVideoStitch
 
                         using (Mat result = new Mat())
                         {
-                            status = stitcher.ComposePanorama(firstVM, result);
+                            Stitcher.Status status = stitcher.ComposePanorama(firstVM, result);
 
                             if (status == Stitcher.Status.Ok)
                             {
@@ -789,7 +768,7 @@ namespace WPFVideoStitch
 
                                         Application.Current.Dispatcher.Invoke(() =>
                                         {
-                                            stStatus.Value += 1;
+                                            stStatus.Value += 2;
                                         });
                                         Application.Current.Dispatcher.Invoke(() =>
                                         {
