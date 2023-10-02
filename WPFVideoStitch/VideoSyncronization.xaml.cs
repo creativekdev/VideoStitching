@@ -89,7 +89,7 @@ namespace WPFVideoStitch
             };
             for (int i = 0; i < values1.Length; i+=step)
             {
-                line1.Points.Add(new OxyPlot.DataPoint(i, values1[i]));
+                line1.Points.Add(new OxyPlot.DataPoint(i, values1[i] * 10 ));
             }
 
             var line2 = new OxyPlot.Series.LineSeries()
@@ -102,7 +102,7 @@ namespace WPFVideoStitch
             };
             for (int i = 0; i < values2.Length; i += step)
             {
-                line2.Points.Add(new OxyPlot.DataPoint(i, values2[i]));
+                line2.Points.Add(new OxyPlot.DataPoint(i, values2[i] * 10 + 1  ));
             }
 
             var line3 = new OxyPlot.Series.LineSeries()
@@ -123,7 +123,7 @@ namespace WPFVideoStitch
             var myModel = new PlotModel { Title = str };
             myModel.Series.Add(line1);
             myModel.Series.Add(line2);
-            myModel.Series.Add(line3);
+            //myModel.Series.Add(line3);
             //Assign PlotModel to PlotView
             myPlot.Model = myModel;
 
@@ -181,16 +181,27 @@ namespace WPFVideoStitch
 
             DiscreteSignal left2 = waveContainer2[Channels.Left];
 
-            var mfccs1 = ExtractMFCCs(left1);
-            var mfccs2 = ExtractMFCCs(left2);
-            float[] crossCorrelation = CalculateCrossCorrelation(mfccs1, mfccs2);
+            /*            var mfccs1 = ExtractMFCCs(left1);
+                        var mfccs2 = ExtractMFCCs(left2);*/
+
+            DiscreteSignal res = Operation.CrossCorrelate(new DiscreteSignal(1, left1.Samples), new DiscreteSignal(1, left2.Samples));
+            float[] crossCorrelation = res.Samples;
+            /*
+            double[] flatMfccs1 = mfccs1.SelectMany(row => row).ToArray();
+            double[] flatMfccs2 = mfccs2.SelectMany(row => row).ToArray();
+
+            ShowPlot("res", flatMfccs1, flatMfccs2, crossCorrelation, 1);*/
+
             int maxIndex = Array.IndexOf(crossCorrelation, crossCorrelation.Max());
-            int timeDelayFrames = maxIndex - mfccs1.Length;
+
+            //ShowPlot("res", left1.Samples, left2.Samples, crossCorrelation, 1000);
+
+            //int timeDelayFrames = mfccs2.Length - maxIndex + mfccs1.Length;
+            int timeDelayFrames = maxIndex - left1.Samples.Length;
             
             double calcDuration = left1.Duration > left2.Duration ? left2.Duration : left1.Duration;
 
-            //if (calcDuration > totalTimeLength) calcDuration = totalTimeLength;
-            calcDuration *= randomValue;
+            if (calcDuration > totalTimeLength) calcDuration = totalTimeLength;
             
             if (timeDelayFrames < 0)
             {
@@ -198,22 +209,22 @@ namespace WPFVideoStitch
                 {
                     firstVideoFrame.Text = "0";
                     firstVideoSecond.Text = "0ms";
-                    secondVideoFrame.Text = ((int)(-timeDelayFrames * calcDuration / mfccs1.Length * frameRate)).ToString();
-                    secondVideoSecond.Text = ((int)(-timeDelayFrames * calcDuration * 1000 / mfccs1.Length)).ToString() + "ms";
+                    secondVideoFrame.Text = ((int)(-timeDelayFrames * calcDuration / left1.Samples.Length * frameRate)).ToString();
+                    secondVideoSecond.Text = ((int)(-timeDelayFrames * calcDuration * 1000 / left1.Samples.Length)).ToString() + "ms";
                 });
             }
             else
             {
                 System.Windows.Application.Current.Dispatcher.Invoke(() =>
                 {
-                    firstVideoFrame.Text = ((int)(timeDelayFrames * calcDuration / mfccs1.Length * frameRate)).ToString();
-                    firstVideoSecond.Text = ((int)(timeDelayFrames * calcDuration * 1000 / mfccs1.Length)).ToString() + "ms";
+                    firstVideoFrame.Text = ((int)(timeDelayFrames * calcDuration / left1.Samples.Length * frameRate)).ToString();
+                    firstVideoSecond.Text = ((int)(timeDelayFrames * calcDuration * 1000 / left1.Samples.Length)).ToString() + "ms";
                     secondVideoFrame.Text = "0";
                     secondVideoSecond.Text = "0ms";
                 });
             }
 
-            frameCount = (int)(timeDelayFrames * left1.Duration / mfccs1.Length * frameRate);
+            frameCount = (int)(timeDelayFrames * left1.Duration / left1.Samples.Length * frameRate);
             System.Windows.Application.Current.Dispatcher.Invoke(() =>
             {
                 stStatus.Visibility = Visibility.Collapsed;
@@ -267,27 +278,34 @@ namespace WPFVideoStitch
             }
             return doubleArray;
         }
-        float[] CalculateCrossCorrelation(double[][] mfccs1, double[][] mfccs2)
+/*        float[] CalculateCrossCorrelation(double[][] mfccs1, double[][] mfccs2)
         {
-            double[] flatMfccs1 = mfccs1.SelectMany(row => row).ToArray();
+*//*            double[] flatMfccs1 = mfccs1.SelectMany(row => row).ToArray();
             double[] flatMfccs2 = mfccs2.SelectMany(row => row).ToArray();
-            float[] f1 = new float[flatMfccs1.Length];
-            float[] f2 = new float[flatMfccs2.Length];
+            //float[] f1 = new float[flatMfccs1.Length];
+            //float[] f2 = new float[flatMfccs2.Length];
+            float[] f1 = new float[5];
+            float[] f2 = new float[10];
 
-            for (int i = 0; i <flatMfccs1.Length; i++)
+
+            for (int i = 0; i < 5; i++)
+                f1[i] = (float)i + 5;
+            for( int i = 0; i < 10; i++)
+                f2[i] = (float)i + 1;*/
+/*            for (int i = 0; i <flatMfccs1.Length; i++)
             {
                 f1[i] = (float)flatMfccs1[i];
             }
             for (int i = 0; i < flatMfccs2.Length; i++)
             { 
                 f2[i] = (float)flatMfccs2[i];
-            }
+            }*//*
             
-            int n = flatMfccs1.Length + flatMfccs2.Length - 1;
-            DiscreteSignal res = Operation.CrossCorrelate(new DiscreteSignal(1,f1), new DiscreteSignal(1, f2));
+            //int n = flatMfccs1.Length + flatMfccs2.Length - 1;
+            DiscreteSignal res = Operation.CrossCorrelate(new DiscreteSignal(1,f2), new DiscreteSignal(1, f1));
 
             return res.Samples;
-        }
+        }*/
 
         private void ReSetButton_Click(object sender, RoutedEventArgs e)
         {
@@ -355,24 +373,23 @@ namespace WPFVideoStitch
 
         private void GenerateAudioFiles()
         {
-            ExtractAudioFormVideo(left, "left.wav");
-            ExtractAudioFormVideo(right, "right.wav");
+            ExtractAudioFromVideo(left, "left.wav");
+            ExtractAudioFromVideo(right, "right.wav");
         }
 
-        private void ExtractAudioFormVideo(string videoFilePath, string outputFilePath)
+        private void ExtractAudioFromVideo(string videoFilePath, string outputFilePath)
         {
 
             if (File.Exists(outputFilePath))
             {
-                // Delete the existing file
                 File.Delete(outputFilePath);
             }
 
             string ffmpegPath = @"ffmpeg.exe";
             //string arguments = $"-i \"{videoFilePath}\" -vn -acodec copy \"{outputFilePath}\"";
 
-            //            string arguments = $"-i \"{videoFilePath}\" -ss 0 -t {totalTimeLength}s -q:a 0 \"{outputFilePath}\"";
-            string arguments = $"-i \"{videoFilePath}\" -q:a 0 \"{outputFilePath}\"";
+            //string arguments = $"-i \"{videoFilePath}\" -ss 0 -t {totalTimeLength}s -q:a 0 \"{outputFilePath}\"";
+            string arguments = $"-i \"{videoFilePath}\" -ss 0 -t {totalTimeLength}s -q:a 0 \"{outputFilePath}\"";
 
             var process = new System.Diagnostics.Process
             {

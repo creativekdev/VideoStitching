@@ -329,8 +329,6 @@ namespace WPFVideoStitch
                         leftVideo = file;
                         //ExtractAudioFormVideo(file, "left.wav");
                         
-                        
-                        
                         leftCapture.Dispose();
                         leftCapture = new VideoCapture(leftVideo);
 
@@ -339,9 +337,12 @@ namespace WPFVideoStitch
                         //leftVideoCtl.Source = ToBitmapSource(frame.ToImage<Bgr, byte>());
                         ExtractImageFromVideo(file , 1 , leftVideoCtl);
 
+                        leftCapture.Set(Emgu.CV.CvEnum.CapProp.PosFrames, 0);
                         LeftSlide.Minimum = 0;
                         LeftSlide.Maximum = leftCapture.Get(Emgu.CV.CvEnum.CapProp.FrameCount);
                         lefttotalframecount = (int)LeftSlide.Maximum;
+                        LeftSlide.Value = 0;
+                        leftVideoSlideValue = 0;
                         //GetFrameCount(file);
 
 
@@ -385,6 +386,10 @@ namespace WPFVideoStitch
                         //rightVideoCtl.Play();
 
                         //PlayMediaElementWithDelay(rightVideoCtl);
+
+                        rightCapture.Set(Emgu.CV.CvEnum.CapProp.PosFrames, 0);
+                        RightSlide.Value = 0;
+                        rightVideoSlideValue = 0;
                         RightSlide.Minimum = 0;
                         RightSlide.Maximum = rightCapture.Get(Emgu.CV.CvEnum.CapProp.FrameCount);
                         righttotalframecount = (int)RightSlide.Maximum;
@@ -519,10 +524,7 @@ namespace WPFVideoStitch
             }
 
             leftCapture.Read(leftMat);
-            leftMat.Save("left.jpg");
-
             rightCapture.Read(rightMat);
-            rightMat.Save("right.jpg");
 
         }
         public BitmapSource ToBitmapSource(Image<Bgr, byte> image)
@@ -587,7 +589,9 @@ namespace WPFVideoStitch
                     //Mat frame= leftCapture.QuerySmallFrame();
                     //leftVideoCtl.Source = ToBitmapSource(frame.ToImage<Bgr, byte>());
 
-
+                    leftCapture.Set(Emgu.CV.CvEnum.CapProp.PosFrames, 0);
+                    LeftSlide.Value = 0;
+                    leftVideoSlideValue = 0;
                     LeftSlide.Minimum = 0;
                     LeftSlide.Maximum = leftCapture.Get(Emgu.CV.CvEnum.CapProp.FrameCount);
                     lefttotalframecount = (int)LeftSlide.Maximum;
@@ -644,6 +648,9 @@ namespace WPFVideoStitch
 
                     rightCapture.Read(rightMat);
 
+                    rightCapture.Set(Emgu.CV.CvEnum.CapProp.PosFrames, 0);
+                    RightSlide.Value = 0;
+                    rightVideoSlideValue = 0;
                     RightSlide.Minimum = 0;
                     RightSlide.Maximum = rightCapture.Get(Emgu.CV.CvEnum.CapProp.FrameCount);
                     righttotalframecount = (int)RightSlide.Maximum;
@@ -709,8 +716,8 @@ namespace WPFVideoStitch
                                         sourceImages[1] = new Image<Bgr, byte>("right.jpg");*/
                     //firstVM.Push(sourceImages);
 
-                    leftCapture.Set(Emgu.CV.CvEnum.CapProp.PosFrames, lefttotalframecount/2);
-                    rightCapture.Set(Emgu.CV.CvEnum.CapProp.PosFrames, lefttotalframecount/2 - frameCount);
+                    leftCapture.Set(Emgu.CV.CvEnum.CapProp.PosFrames, lefttotalframecount/3);
+                    rightCapture.Set(Emgu.CV.CvEnum.CapProp.PosFrames, lefttotalframecount/3 - frameCount);
 
                     while(leftCapture.IsOpened && rightCapture.IsOpened)
                     {
@@ -725,7 +732,14 @@ namespace WPFVideoStitch
 
                         Stitcher.Status status = stitcher.EstimateTransform(firstVM);
 
-                        status = stitcher.ComposePanorama(firstVM, resultMat);
+                        try
+                        {
+                            status = stitcher.ComposePanorama(firstVM, resultMat);
+                        }
+                        catch (Exception e)
+                        {
+
+                        }
 
                         if (status == Stitcher.Status.Ok)
                             break;
@@ -756,26 +770,32 @@ namespace WPFVideoStitch
 
                         using (Mat result = new Mat())
                         {
-                            Stitcher.Status status = stitcher.ComposePanorama(firstVM, result);
-
-                            if (status == Stitcher.Status.Ok)
+                            try
                             {
-                                using (Mat resized_mat = new Mat())
+                                Stitcher.Status status = stitcher.ComposePanorama(firstVM, result);
+                                if (status == Stitcher.Status.Ok)
                                 {
-                                    using (Mat showing_mat = new Mat())
+                                    using (Mat resized_mat = new Mat())
                                     {
-                                        CvInvoke.Resize(result, showing_mat, new System.Drawing.Size(620, 298));
+                                        using (Mat showing_mat = new Mat())
+                                        {
+                                            CvInvoke.Resize(result, showing_mat, new System.Drawing.Size(1340, 596));
 
-                                        Application.Current.Dispatcher.Invoke(() =>
-                                        {
-                                            stStatus.Value += 2;
-                                        });
-                                        Application.Current.Dispatcher.Invoke(() =>
-                                        {
-                                            mergedImage.Source = ToBitmapSource(showing_mat.ToImage<Bgr, byte>());
-                                        });
+                                            Application.Current.Dispatcher.Invoke(() =>
+                                            {
+                                                stStatus.Value += 1.5;
+                                            });
+                                            Application.Current.Dispatcher.Invoke(() =>
+                                            {
+                                                mergedImage.Source = ToBitmapSource(showing_mat.ToImage<Bgr, byte>());
+                                            });
+                                        }
                                     }
                                 }
+                            }
+                            catch (Exception e)
+                            {
+
                             }
                         }
                     }
@@ -823,13 +843,11 @@ namespace WPFVideoStitch
             LeftSlideDraggingFlag = false;
             leftVideoSlideValue = (int)LeftSlide.Value;
 
-
-
             leftCapture.Set(Emgu.CV.CvEnum.CapProp.PosFrames , leftVideoSlideValue);
+            LeftSlide.Value = leftVideoSlideValue;
 
             using (Mat frame = leftCapture.QuerySmallFrame())
             {
-                LeftSlide.Value = leftVideoSlideValue;
 
                 Mat showing_mat = new Mat();
                 CvInvoke.Resize(frame, showing_mat, new System.Drawing.Size(800, 600));
@@ -837,8 +855,22 @@ namespace WPFVideoStitch
                 leftVideoCtl.Source = ToBitmapSource(showing_mat.ToImage<Bgr, byte>());
                 LeftSlidePlayStatus = tempStatus;
             }
-             
-            
+
+            if(RightSlidePlayStatus == false)
+            {
+                rightVideoSlideValue = leftVideoSlideValue - frameCount;
+                rightCapture.Set(Emgu.CV.CvEnum.CapProp.PosFrames, rightVideoSlideValue);
+                RightSlide.Value = rightVideoSlideValue;
+
+                using (Mat frame = rightCapture.QuerySmallFrame())
+                {
+
+                    Mat showing_mat = new Mat();
+                    CvInvoke.Resize(frame, showing_mat, new System.Drawing.Size(800, 600));
+
+                    rightVideoCtl.Source = ToBitmapSource(showing_mat.ToImage<Bgr, byte>());
+                }
+            }
         }
 
         async void PlayMediaElementWithDelay(MediaElement mediaElement)
@@ -863,18 +895,32 @@ namespace WPFVideoStitch
         {
             RightSlideDraggingFlag = false;
             rightVideoSlideValue = (int)RightSlide.Value;
+            RightSlide.Value = rightVideoSlideValue;
             rightCapture.Set(Emgu.CV.CvEnum.CapProp.PosFrames, rightVideoSlideValue);
 
 
             using (Mat frame = rightCapture.QuerySmallFrame())
             {
-                RightSlide.Value = rightVideoSlideValue;
                 Mat showing_mat = new Mat();
                 CvInvoke.Resize(frame, showing_mat, new System.Drawing.Size(800, 600));
                 rightVideoCtl.Source = ToBitmapSource(showing_mat.ToImage<Bgr, byte>());
                 RightSlidePlayStatus = tempStatus;
             }
 
+            if (LeftSlidePlayStatus == false)
+            {
+                leftVideoSlideValue = rightVideoSlideValue + frameCount;
+                LeftSlide.Value = leftVideoSlideValue;
+                leftCapture.Set(Emgu.CV.CvEnum.CapProp.PosFrames, leftVideoSlideValue);
+                using (Mat frame = leftCapture.QuerySmallFrame())
+                {
+
+                    Mat showing_mat = new Mat();
+                    CvInvoke.Resize(frame, showing_mat, new System.Drawing.Size(800, 600));
+
+                    leftVideoCtl.Source = ToBitmapSource(showing_mat.ToImage<Bgr, byte>());
+                }
+            }
         }
 
         private void CenterSlide_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
@@ -901,11 +947,41 @@ namespace WPFVideoStitch
         void OnMouseDownPause1Media(object sender, MouseButtonEventArgs args)
         {
            LeftSlidePlayStatus = !LeftSlidePlayStatus;
+
+            if (LeftSlidePlayStatus == false && RightSlidePlayStatus == false)
+            {
+                rightVideoSlideValue = leftVideoSlideValue - frameCount;
+                RightSlide.Value = rightVideoSlideValue;
+                rightCapture.Set(Emgu.CV.CvEnum.CapProp.PosFrames, rightVideoSlideValue);
+
+                using (Mat frame = rightCapture.QuerySmallFrame())
+                {
+
+                    Mat showing_mat = new Mat();
+                    CvInvoke.Resize(frame, showing_mat, new System.Drawing.Size(800, 600));
+
+                    rightVideoCtl.Source = ToBitmapSource(showing_mat.ToImage<Bgr, byte>());
+                }
+            }
         }
         void OnMouseDownPause2Media(object sender, MouseButtonEventArgs args)
         {
-
             RightSlidePlayStatus = !RightSlidePlayStatus;
+
+            if (LeftSlidePlayStatus == false && RightSlidePlayStatus == false)
+            {
+                leftVideoSlideValue = rightVideoSlideValue + frameCount;
+                LeftSlide.Value = leftVideoSlideValue;
+                leftCapture.Set(Emgu.CV.CvEnum.CapProp.PosFrames, leftVideoSlideValue);
+
+                using (Mat frame = leftCapture.QuerySmallFrame())
+                {
+                    Mat showing_mat = new Mat();
+                    CvInvoke.Resize(frame, showing_mat, new System.Drawing.Size(800, 600));
+
+                    leftVideoCtl.Source = ToBitmapSource(showing_mat.ToImage<Bgr, byte>());
+                }
+            }
         }
 
         void OnMouseDownPause3Media(object sender, MouseButtonEventArgs args)
