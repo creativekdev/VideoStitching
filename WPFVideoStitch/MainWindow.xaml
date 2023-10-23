@@ -28,6 +28,13 @@
                             x:Name="ImportVideo"
                             Click="Import_Videos"
                             Content="Import Videos" Margin="100,172,800,138" />
+
+                    <Button
+                            x:Name="startPoint"
+                            Content="Set as Startpoint" Margin="877,100,23,220" Click="startPoint_Click" />
+                    <Button
+                            x:Name="endPoint"
+                            Content="Set as Endpoint" Margin="877,150,23,170" Click="endPoint_Click" />
                     <Grid
                     HorizontalAlignment="Left"
                     Margin="250,10,10,10"

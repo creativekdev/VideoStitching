@@ -37,6 +37,7 @@ using static sun.management.jmxremote.ConnectorBootstrap;
 using System.Runtime.Serialization.Formatters.Binary;
 using Emgu.CV.Linemod;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
+using Emgu.CV.Cuda;
 
 namespace WPFVideoStitch
 {
@@ -113,6 +114,8 @@ namespace WPFVideoStitch
             Synchronization.Visibility = Visibility.Collapsed;
             Stitch.Visibility = Visibility.Collapsed;
             Render.Visibility = Visibility.Collapsed;
+            startPoint.Visibility = Visibility.Collapsed;
+            endPoint.Visibility = Visibility.Collapsed;
 
             //float[] LK = new float[] { 1489.543f, 0, 1343.358f, 0, 1489.543f, 1008.269f, 0, 0, 1 };
             //float[] RK = new float[] { 1500.789f, 0, 1343.358f, 0, 1500.789f, 1008.269f, 0, 0, 1 };
@@ -206,7 +209,7 @@ namespace WPFVideoStitch
 
             string ffmpegPath = @"stitch.exe";
             //string arguments = $"-i \"{videoFilePath}\" -vn -acodec copy \"{outputFilePath}\"";
-            string arguments = $"left.jpg right.jpg -v";
+            string arguments = $"left.jpg right.jpg -v --confidence_threshold 0.3";
 
             var process = new System.Diagnostics.Process
             {
@@ -230,17 +233,17 @@ namespace WPFVideoStitch
                     {
                         mergedImage.Source = ToBitmapSource(mat.ToImage<Bgr, byte>());
                         stitchedFlag = true;
-
-
-                        VectorOfMat vm = new VectorOfMat();
+                        Mat matchingImage = new Mat("matches.jpg");
+                        CvInvoke.Imshow("Matching", matchingImage);
+/*                        VectorOfMat vm = new VectorOfMat();
                         vm.Push(leftMat);
                         vm.Push(rightMat);
                         Mat resultMat = new Mat();
                         stitcher.Stitch(vm, resultMat);
 
-                        resultMat.Save("myresult.jpg");
+                        resultMat.Save("myresult.jpg");*/
 
-                        mergedImage.Source = ToBitmapSource(resultMat.ToImage<Bgr, byte>());
+                        mergedImage.Source = ToBitmapSource(mat.ToImage<Bgr, byte>());
                     }
                 }
 
@@ -583,6 +586,7 @@ namespace WPFVideoStitch
                     using (Mat resultMat = new Mat())
                     {
                         stitcher.ComposePanorama(vm, resultMat);
+                        
                         Application.Current.Dispatcher.Invoke(() =>
                         {
                             using (Mat showing_mat = new Mat())
@@ -694,6 +698,8 @@ namespace WPFVideoStitch
                         Synchronization.Visibility = Visibility.Visible;
                         Stitch.Visibility = Visibility.Visible;
                         Render.Visibility = Visibility.Visible;
+                        startPoint.Visibility = Visibility.Visible;
+                        endPoint.Visibility = Visibility.Visible;
 
                         rightThreadRunning = true;
                         System.Threading.Thread right = new System.Threading.Thread(ShowRightVideo);
@@ -724,8 +730,6 @@ namespace WPFVideoStitch
         {
             //MessageBox.Show(e.FrameCount.ToString());
             frameCount = e.FrameCount;
-
-
             LeftSlidePlayStatus = false;
 
             RightSlidePlayStatus = false;
@@ -854,11 +858,11 @@ namespace WPFVideoStitch
             leftMat.Save("left.jpg");
             rightMat.Save("right.jpg");
 
-            System.Threading.Thread preview = new System.Threading.Thread(CallStitching);
-            preview.Start();
+/*            System.Threading.Thread preview = new System.Threading.Thread(CallStitching);
+            preview.Start();*/
 
-/*            System.Threading.Thread thread = new System.Threading.Thread(GetStitchingValues);
-            thread.Start();*/
+            System.Threading.Thread thread = new System.Threading.Thread(GetStitchingValues);
+            thread.Start();
         }
 
 
@@ -919,6 +923,8 @@ namespace WPFVideoStitch
                         Synchronization.Visibility = Visibility.Visible;
                         Stitch.Visibility = Visibility.Visible;
                         Render.Visibility = Visibility.Visible;
+                        startPoint.Visibility = Visibility.Visible;
+                        endPoint.Visibility = Visibility.Visible;
                     }
                 }
             }
@@ -988,6 +994,8 @@ namespace WPFVideoStitch
                         Synchronization.Visibility = Visibility.Visible;
                         Stitch.Visibility = Visibility.Visible;
                         Render.Visibility = Visibility.Visible;
+                        startPoint.Visibility = Visibility.Visible;
+                        endPoint.Visibility = Visibility.Visible;
                     }
 
                 }
@@ -1050,6 +1058,9 @@ namespace WPFVideoStitch
             Mat rightConvertedMask = new Mat();
             rightMask.ConvertTo(rightConvertedMask, DepthType.Cv8U);
 
+            leftMask.Dispose();
+            rightMask.Dispose();
+
             while (leftCapture.IsOpened && rightCapture.IsOpened)
             {
                 leftCapture.Read(leftMat);
@@ -1109,7 +1120,9 @@ namespace WPFVideoStitch
 
         private void Render_Click(object sender, RoutedEventArgs e)
         {
-            Render render = new Render();
+            LeftSlidePlayStatus = false;
+            RightSlidePlayStatus = false;
+            Render render = new Render(leftVideo, rightVideo , frameCount);
             render.Show();
         }
         private void VideoMerger_Click(object sender, RoutedEventArgs e)
@@ -1277,17 +1290,26 @@ namespace WPFVideoStitch
 
         void OnMouseDownPause3Media(object sender, MouseButtonEventArgs args)
         {
-
-            if (stitchedFlag == false)
-            {
-                if (LeftSlidePlayStatus == false && RightSlidePlayStatus == false) { LeftSlidePlayStatus = true; RightSlidePlayStatus = true; }
-                else { LeftSlidePlayStatus = false; RightSlidePlayStatus = false; }
-            }
+/*            if (stitchedFlag == false)
+            {*/
+            if (LeftSlidePlayStatus == false && RightSlidePlayStatus == false) { LeftSlidePlayStatus = true; RightSlidePlayStatus = true; }
+            else { LeftSlidePlayStatus = false; RightSlidePlayStatus = false; }
+            /*}
             else
             {
                 System.Threading.Thread preview = new System.Threading.Thread(CallStitching);
                 preview.Start();
-            }
+            }*/
+        }
+
+        private void startPoint_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void endPoint_Click(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }
