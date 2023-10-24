@@ -33,17 +33,6 @@ namespace WPFVideoStitch
         {
             ThreadParameters threadParams = (ThreadParameters)obj;
 
-            /*Working working = null;
-
-
-            Application.Current.Dispatcher.Invoke(() =>
-            {
-                working = new Working
-                {
-                    Owner = this
-                };
-                working.Show();
-            });*/
             Application.Current.Dispatcher.Invoke(() =>
             {
                 pbStatus.Visibility = Visibility.Visible;

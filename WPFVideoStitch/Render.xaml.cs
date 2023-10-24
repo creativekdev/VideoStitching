@@ -50,7 +50,9 @@ namespace WPFVideoStitch
         Matrix<float> LeftK = new Matrix<float>(3, 3);
 
         String outputPath;
-        public Render(String left, String right , int frameCount)
+
+        int count = 0;
+        public Render(String left, String right , int frameCount , double startValue , double endValue)
         {
             InitializeComponent();
             savePath.Text = Properties.Settings.Default.LastFilePath;
@@ -63,6 +65,18 @@ namespace WPFVideoStitch
 
             leftCapture = new VideoCapture(left);
             rightCapture = new VideoCapture(right);
+
+            count = (int) endValue - (int) startValue;
+            if (frameCount < 0)
+            {
+                rightCapture.Set(Emgu.CV.CvEnum.CapProp.PosFrames, startValue - frameCount);
+                leftCapture.Set(Emgu.CV.CvEnum.CapProp.PosFrames, startValue);
+            }
+            else
+            {
+                rightCapture.Set(Emgu.CV.CvEnum.CapProp.PosFrames, startValue);
+                leftCapture.Set(Emgu.CV.CvEnum.CapProp.PosFrames, startValue + frameCount);
+            }
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
@@ -209,12 +223,19 @@ namespace WPFVideoStitch
                 detailSphericalWarper.BuildMaps(leftMat.Size, LeftK.Mat, LeftR.Mat, leftXMap, leftYMap);
                 detailSphericalWarper.BuildMaps(rightMat.Size, RightK.Mat, RightR.Mat, rightXMap, rightYMap);
 
-                using (VideoWriter videoWriter = new VideoWriter(outputPath, 25, new System.Drawing.Size(sampleOutputMat.Width, sampleOutputMat.Height), true))
+                int tempcount = count;
+
+                using (VideoWriter videoWriter = new VideoWriter(outputPath, VideoWriter.Fourcc('M' , 'J' , 'P' , 'G')  , 25, new System.Drawing.Size(sampleOutputMat.Width, sampleOutputMat.Height), true))
                 {
-                    while (leftCapture.IsOpened && rightCapture.IsOpened)
+                    while (leftCapture.IsOpened && rightCapture.IsOpened && tempcount > 0)
                     {
                         leftCapture.Read(leftMat);
                         rightCapture.Read(rightMat);
+
+                        leftCapture.Read(leftMat);
+                        rightCapture.Read(rightMat);
+
+                        tempcount -= 2;
 
                         if (leftMat.IsEmpty || rightMat.IsEmpty)
                             break;
@@ -224,7 +245,7 @@ namespace WPFVideoStitch
                         {
                             //detailSphericalWarper.Warp(leftMat, LeftK.Mat, LeftR.Mat, Inter.Nearest, BorderType.Constant, leftWarped);
                             //detailSphericalWarper.Warp(rightMat, RightK.Mat, RightR.Mat, Inter.Nearest, BorderType.Constant, rightWarped);
-                           
+
                             if(CudaInvoke.HasCuda)
                             {
                                 CudaInvoke.Remap(leftMat, leftWarped, leftXMap, leftYMap, Inter.Nearest);
@@ -256,11 +277,12 @@ namespace WPFVideoStitch
                                         CvInvoke.Resize(resultImage, showing_mat, new System.Drawing.Size(sampleOutputMat.Width, sampleOutputMat.Height));
 
                                         videoWriter.Write(showing_mat);
+                                        videoWriter.Write(showing_mat);
                                     }
 
                                     System.Windows.Application.Current.Dispatcher.Invoke(() =>
                                     {
-                                        stStatus.Value += 1;
+                                        stStatus.Value += 3;
                                     });
                                 }
                             }
@@ -275,8 +297,6 @@ namespace WPFVideoStitch
                 });
             }
         }
-
-
 
         public void TestStitching()
         {

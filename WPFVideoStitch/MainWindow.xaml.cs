@@ -70,7 +70,12 @@ namespace WPFVideoStitch
         int leftVideoSlideValue = 0;
         int rightVideoSlideValue = 0;
 
+        double startValue = 0;
+        double endValue = 0;
+
         bool tempStatus;
+
+        double frameRate = 0;
 
         VideoCapture leftCapture = new VideoCapture();
         VideoCapture rightCapture = new VideoCapture();
@@ -117,10 +122,7 @@ namespace WPFVideoStitch
             startPoint.Visibility = Visibility.Collapsed;
             endPoint.Visibility = Visibility.Collapsed;
 
-            //float[] LK = new float[] { 1489.543f, 0, 1343.358f, 0, 1489.543f, 1008.269f, 0, 0, 1 };
-            //float[] RK = new float[] { 1500.789f, 0, 1343.358f, 0, 1500.789f, 1008.269f, 0, 0, 1 };
-            //float[] LR = new float[] { 0.9245664f, -0.074705034f, -0.37362564f, 0f, 0.98059082f, -0.1966538f, 0.38102096f, 0.18127549f, 0.90662134f };
-            //float[] RR = new float[] { 0.9252639f, 0.06550405f, 0.37362558f, 0f, 0.9849769f, -0.17268626f, -0.3793242f, 0.15978038f, 0.91136354f };
+            startPoint.Content = "StartPoint: " + "0:0s";
         }
 
         public void MainWindow_Closing(object sender, CancelEventArgs e)
@@ -626,6 +628,12 @@ namespace WPFVideoStitch
                         leftCapture = new VideoCapture(leftVideo);
 
                         leftCapture.Read(leftMat);
+
+                        frameRate = leftCapture.Get(Emgu.CV.CvEnum.CapProp.Fps);
+
+                        endValue = leftCapture.Get(Emgu.CV.CvEnum.CapProp.FrameCount);
+
+                        endPoint.Content = "EndPoint: " + (int)(endValue / frameRate) / 60 + ":" + (int)(endValue / frameRate) % 60 + "s";
                         //Mat frame = leftCapture.QuerySmallFrame();
                         //leftVideoCtl.Source = ToBitmapSource(frame.ToImage<Bgr, byte>());
                         ExtractImageFromVideo(file , 1 , leftVideoCtl);
@@ -892,6 +900,12 @@ namespace WPFVideoStitch
                     leftCapture.Dispose();
                     leftCapture = new VideoCapture(leftVideo);
 
+                    frameRate = leftCapture.Get(Emgu.CV.CvEnum.CapProp.Fps);
+
+                    endValue = leftCapture.Get(Emgu.CV.CvEnum.CapProp.FrameCount);
+
+                    endPoint.Content = "EndPoint: " + (int)(endValue / frameRate) / 60 + ":" + (int)(endValue / frameRate) % 60 + "s";
+
                     leftCapture.Read(leftMat);
                     //Mat frame= leftCapture.QuerySmallFrame();
                     //leftVideoCtl.Source = ToBitmapSource(frame.ToImage<Bgr, byte>());
@@ -1122,7 +1136,7 @@ namespace WPFVideoStitch
         {
             LeftSlidePlayStatus = false;
             RightSlidePlayStatus = false;
-            Render render = new Render(leftVideo, rightVideo , frameCount);
+            Render render = new Render(leftVideo, rightVideo , frameCount , startValue , endValue);
             render.Show();
         }
         private void VideoMerger_Click(object sender, RoutedEventArgs e)
@@ -1290,26 +1304,32 @@ namespace WPFVideoStitch
 
         void OnMouseDownPause3Media(object sender, MouseButtonEventArgs args)
         {
-/*            if (stitchedFlag == false)
-            {*/
             if (LeftSlidePlayStatus == false && RightSlidePlayStatus == false) { LeftSlidePlayStatus = true; RightSlidePlayStatus = true; }
             else { LeftSlidePlayStatus = false; RightSlidePlayStatus = false; }
-            /*}
-            else
-            {
-                System.Threading.Thread preview = new System.Threading.Thread(CallStitching);
-                preview.Start();
-            }*/
         }
 
         private void startPoint_Click(object sender, RoutedEventArgs e)
         {
+            startValue = leftVideoSlideValue > rightVideoSlideValue ? rightVideoSlideValue : leftVideoSlideValue;
+            startPoint.Content = "StartPoint: " + (int)(startValue / frameRate) / 60 + ":" + (int)(startValue / frameRate) % 60 + "s";
 
+            if(endValue < startValue)
+            {
+                endValue = startValue + 1;
+                endPoint.Content = "EndPoint: " + (int)(endValue / frameRate) / 60 + ":" + (int)(endValue / frameRate) % 60 + "s";
+            }
         }
 
         private void endPoint_Click(object sender, RoutedEventArgs e)
         {
+            endValue = leftVideoSlideValue > rightVideoSlideValue ? rightVideoSlideValue : leftVideoSlideValue;
+            endPoint.Content = "EndPoint: " + (int)(endValue / frameRate) / 60 + ":" + (int)(endValue / frameRate) % 60 + "s";
 
+            if(endValue < startValue)
+            {
+                endValue = startValue + 1;
+                endPoint.Content = "EndPoint: " + (int)(endValue / frameRate) / 60 + ":" + (int)(endValue / frameRate) % 60 + "s";
+            }
         }
     }
 }
