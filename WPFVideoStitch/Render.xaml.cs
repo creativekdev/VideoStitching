@@ -268,10 +268,7 @@ namespace WPFVideoStitch
                                 {
                                     blender.Blend(resultImage, resultMask);
                                     if (resultImage.Depth != DepthType.Cv8U)
-                                    {
-                                        // Convert the image to a supported depth
                                         resultImage.ConvertTo(resultImage, DepthType.Cv8U);
-                                    }
                                     using (Mat showing_mat = new Mat())
                                     {
                                         CvInvoke.Resize(resultImage, showing_mat, new System.Drawing.Size(sampleOutputMat.Width, sampleOutputMat.Height));
