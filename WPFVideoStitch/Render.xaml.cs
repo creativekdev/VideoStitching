@@ -240,6 +240,8 @@ namespace WPFVideoStitch
                         pbText.Visibility = Visibility.Collapsed;
                         this.IsEnabled = true;
 
+                        videoWriter.Dispose();
+
                         System.Windows.MessageBox.Show("Saved Successfully!", "Success!");
                         this.Close();
                     });
