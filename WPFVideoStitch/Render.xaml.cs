@@ -94,7 +94,7 @@ namespace WPFVideoStitch
 
                 try
                 {
-                    VideoWriter videoWriter = new VideoWriter(outputPath, 25, new System.Drawing.Size(sampleOutputMat.Width, sampleOutputMat.Height), true);
+                    VideoWriter videoWriter = new VideoWriter(outputPath,VideoWriter.Fourcc('M' , 'J' , 'P' , 'G') , 25, new System.Drawing.Size(sampleOutputMat.Width, sampleOutputMat.Height), true);
 
                     System.Windows.Application.Current.Dispatcher.Invoke(() =>
                     {
@@ -290,8 +290,6 @@ namespace WPFVideoStitch
                         LeftK[i, j] = data[19 + i * 3 + j];
                         RightK[i, j] = data[28 + i * 3 + j];
                     }
-
-
 
                 if (leftCapture.IsOpened && rightCapture.IsOpened)
                 {
