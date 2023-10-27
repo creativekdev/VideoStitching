@@ -13,7 +13,8 @@
             <RowDefinition Height="88*"/>
         </Grid.RowDefinitions>
         <Border BorderBrush="White" BorderThickness="1" HorizontalAlignment="Center" Height="104" VerticalAlignment="Top" Width="343" Grid.Row="2" Margin="0,2,0,0">
-            <TextBox x:Name="savePath" HorizontalAlignment="Center" Height="21" Margin="0,20,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="146"/>
+            <TextBox x:Name="savePath" HorizontalAlignment="Center" Height="21" Margin="0,20,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="146"
+                     IsReadOnly="True"/>
         </Border>
         <Label Content="Output Path :" HorizontalAlignment="Left" Margin="27,19,0,0" VerticalAlignment="Top" Width="81" Foreground="White" Grid.Row="2"/>
         <Button Content="..." HorizontalAlignment="Left" Margin="285,23,0,0" VerticalAlignment="Top" Width="33" Click="Button_Click_2" Grid.Row="2"/>
