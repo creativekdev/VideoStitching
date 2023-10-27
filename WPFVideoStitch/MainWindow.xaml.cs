@@ -27,16 +27,13 @@ using System.Drawing;
 using System.IO;
 using System.Windows.Controls.Primitives;
 using System.ComponentModel;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 using com.sun.org.apache.xalan.@internal.xsltc.trax;
 using System.Drawing.Drawing2D;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Features2D;
 using sun.java2d;
-using static sun.management.jmxremote.ConnectorBootstrap;
 using System.Runtime.Serialization.Formatters.Binary;
 using Emgu.CV.Linemod;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 using Emgu.CV.Cuda;
 
 namespace WPFVideoStitch
@@ -86,10 +83,6 @@ namespace WPFVideoStitch
         TimeSpan _position;
 
         Stitcher stitcher = new Stitcher();
-
-
-        //DispatcherTimer _timer = new DispatcherTimer();
-
 
         bool SynchronizationDialogShow = false;
 
@@ -237,14 +230,6 @@ namespace WPFVideoStitch
                         stitchedFlag = true;
                         Mat matchingImage = new Mat("matches.jpg");
                         CvInvoke.Imshow("Matching", matchingImage);
-/*                        VectorOfMat vm = new VectorOfMat();
-                        vm.Push(leftMat);
-                        vm.Push(rightMat);
-                        Mat resultMat = new Mat();
-                        stitcher.Stitch(vm, resultMat);
-
-                        resultMat.Save("myresult.jpg");*/
-
                         mergedImage.Source = ToBitmapSource(mat.ToImage<Bgr, byte>());
                     }
                 }
@@ -260,11 +245,9 @@ namespace WPFVideoStitch
 
             if (File.Exists("output.jpg"))
             {
-                // Delete the existing file
                 File.Delete("output.jpg");
             }
             string ffmpegPath = @"ffmpeg.exe";
-            //string arguments = $"-i \"{videoFilePath}\" -vn -acodec copy \"{outputFilePath}\"";
 
             string arguments = $"-i \"{videoFilePath}\" -vf \"select=gte(n\\,{frameNumber})\" -vframes 1 output.jpg";
 

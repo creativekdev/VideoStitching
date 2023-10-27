@@ -28,8 +28,6 @@ namespace WPFVideoStitch
     /// Interaction logic for Render.xaml
     /// </summary>
     /// 
-
-
     public partial class Render : Window
     {
 
@@ -59,6 +57,7 @@ namespace WPFVideoStitch
             outputPath = savePath.Text;
 
             stStatus.Visibility = Visibility.Collapsed;
+            pbText.Visibility = Visibility.Collapsed;
 
             this.left = left;
             this.right = right;
@@ -81,69 +80,8 @@ namespace WPFVideoStitch
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            // Create a new MediaElement control
-            /*
-             * MediaElement mediaElement = new MediaElement();
-
-            // Set the source of the MediaElement to the video file
-            string videoFileName = "output.mp4";
-            string currentDirectory = Directory.GetCurrentDirectory();
-            string VideoFilePath = System.IO.Path.Combine(currentDirectory, videoFileName);
-            var videouri = new Uri(VideoFilePath);
-
-            mediaElement.Source = videouri;
-
-            string AudioFileName = "left.wav";
-            string AudioFilePath = System.IO.Path.Combine(currentDirectory, AudioFileName);
-            var audiouri = new Uri(AudioFilePath);
-
-            // Create a new MediaTimeline and set its source to the audio file
-            MediaTimeline audioTimeline = new MediaTimeline(audiouri);
-
-            // Create a new MediaClock and set its timeline to the audio timeline
-            MediaClock audioClock = audioTimeline.CreateClock();
-
-            // Set the clock of the MediaElement to the audio clock
-            mediaElement.Clock = audioClock;
-
-            // Create a new MediaEncoder and set its source to the MediaElement
-            MediaFoundationEncoder encoder = new MediaFoundationEncoder(mediaElement);
-
-            // Set the output file path of the encoder
-            encoder.OutputFilePath = savePath;
-
-            // Start the encoding process
-            encoder.Encode();
-            */
-
-            /*            string ffmpegPath = @"ffmpeg.exe";
-                        string arguments = $"-i \"output.mp4\" -i \"left.wav\" -c:v copy -map 0:v:0 -map 1:a:0 -c:a aac -b:a 192k hello.mp4";
-
-                        var process = new System.Diagnostics.Process
-                        {
-                            StartInfo = new ProcessStartInfo
-                            {
-                                FileName = ffmpegPath,
-                                Arguments = arguments,
-                                UseShellExecute = false,
-                                CreateNoWindow = true
-                            }
-                        };
-
-                        process.Start();
-                        process.WaitForExit();*/
-
-
-
             System.Threading.Thread preview = new System.Threading.Thread(CallStitching);
             preview.Start();
-
-            //CvInvoke.UseOpenCL = true;
-
-
-/*            TestStitching();*/
-
-
         }
 
 
@@ -154,15 +92,13 @@ namespace WPFVideoStitch
                 System.Windows.Application.Current.Dispatcher.Invoke(() =>
                 {
                     stStatus.Visibility = Visibility.Visible;
+                    pbText.Visibility = Visibility.Visible;
                     this.IsEnabled = false;
 
-                    stStatus.Maximum = leftCapture.Get(Emgu.CV.CvEnum.CapProp.FrameCount);
+                    stStatus.Maximum = count;
                     stStatus.Value = 0;
                 });
 
-                // read the data from the text file
-                //string[] lines = File.ReadAllLines("data.txt");
-                //string[] lines1 = File.ReadAllLines("data1.txt");
                 string[] lines = File.ReadAllLines("data2.txt");
 
                 // parse the data into an array of doubles
@@ -170,14 +106,10 @@ namespace WPFVideoStitch
                 int i, j;
                 for ( i = 0; i < lines.Length; i++)
                 {
-                    //data[i] = (float.Parse(lines[i]) + float.Parse(lines1[i]) + float.Parse(lines2[i])) / 3;
                     data[i] = float.Parse(lines[i]);
                 }
 
                 DetailSphericalWarper detailSphericalWarper = new DetailSphericalWarper(data[0]);
-
-                //DetailPaniniWarper detailSphericalWarper = new DetailPaniniWarper(data[0]);
-
                 Mat sampleOutputMat = new Mat("result.jpg");
 
                 Mat leftMask = new Mat("mask1.jpg", ImreadModes.Grayscale);
@@ -240,12 +172,12 @@ namespace WPFVideoStitch
                         if (leftMat.IsEmpty || rightMat.IsEmpty)
                             break;
 
+                        Stopwatch stopwatch = new Stopwatch();
+                        stopwatch.Start();
+
                         using (Mat leftWarped = new Mat())
                         using (Mat rightWarped = new Mat())
                         {
-                            //detailSphericalWarper.Warp(leftMat, LeftK.Mat, LeftR.Mat, Inter.Nearest, BorderType.Constant, leftWarped);
-                            //detailSphericalWarper.Warp(rightMat, RightK.Mat, RightR.Mat, Inter.Nearest, BorderType.Constant, rightWarped);
-
                             if(CudaInvoke.HasCuda)
                             {
                                 CudaInvoke.Remap(leftMat, leftWarped, leftXMap, leftYMap, Inter.Nearest);
@@ -284,12 +216,27 @@ namespace WPFVideoStitch
                                 }
                             }
                         }
+
+                        stopwatch.Stop();
+                        TimeSpan duration = stopwatch.Elapsed;
+
+                        // Access the duration value in milliseconds
+                        double milliseconds = duration.TotalMilliseconds;
+                        System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            pbText.Text = ((int)(2000 / milliseconds)).ToString() + "fps";
+                        });
+
+                        // Access the duration values
+                        int totalSeconds = (int)duration.TotalSeconds;
+
                     }
                 }
 
                 System.Windows.Application.Current.Dispatcher.Invoke(() =>
                 {
                     stStatus.Visibility = Visibility.Collapsed;
+                    pbText.Visibility = Visibility.Collapsed;
                     this.IsEnabled = true;
                 });
             }

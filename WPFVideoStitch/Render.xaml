@@ -20,8 +20,8 @@
         <Button Content="Save" HorizontalAlignment="Left" Margin="170,72,0,0" VerticalAlignment="Top" Width="58" Grid.Row="2" Click="Button_Click"/>
         <Button Content="Close" HorizontalAlignment="Left" Margin="255,71,0,0" VerticalAlignment="Top" Width="56" Height="20" Grid.Row="2" Click="Button_Click_1"/>
 
-
         <ProgressBar Style="{DynamicResource ProgressBarStyleforMerge}" Minimum="0" Maximum="100" x:Name="stStatus" HorizontalAlignment="Center" Width="297" Margin="0,117,0,20" Grid.Row="2"/>
+        <TextBlock Text="loading..." x:Name="pbText" VerticalAlignment="Top" Margin="153,117,137,0" Grid.Row="2" />
 
 
     </Grid>
