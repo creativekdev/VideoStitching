@@ -89,76 +89,80 @@ namespace WPFVideoStitch
         {
             if (File.Exists("result.jpg"))
             {
-                System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                {
-                    stStatus.Visibility = Visibility.Visible;
-                    pbText.Visibility = Visibility.Visible;
-                    this.IsEnabled = false;
 
-                    stStatus.Maximum = count;
-                    stStatus.Value = 0;
-                });
-
-                string[] lines = File.ReadAllLines("data2.txt");
-
-                // parse the data into an array of doubles
-                float[] data = new float[lines.Length];
-                int i, j;
-                for ( i = 0; i < lines.Length; i++)
-                {
-                    data[i] = float.Parse(lines[i]);
-                }
-
-                DetailSphericalWarper detailSphericalWarper = new DetailSphericalWarper(data[0]);
                 Mat sampleOutputMat = new Mat("result.jpg");
 
-                Mat leftMask = new Mat("mask1.jpg", ImreadModes.Grayscale);
-                Mat rightMask = new Mat("mask2.jpg", ImreadModes.Grayscale);
+                try
+                {
+                    VideoWriter videoWriter = new VideoWriter(outputPath, 25, new System.Drawing.Size(sampleOutputMat.Width, sampleOutputMat.Height), true);
 
-                Mat realLeftMask = new Mat();
-                Mat realRightMask = new Mat();
+                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        stStatus.Visibility = Visibility.Visible;
+                        pbText.Visibility = Visibility.Visible;
+                        this.IsEnabled = false;
 
-                CvInvoke.Resize(leftMask, realLeftMask ,  new System.Drawing.Size((int)data[37], (int)data[39]));
-                CvInvoke.Resize(rightMask, realRightMask, new System.Drawing.Size((int)data[38], (int)data[39]));
+                        stStatus.Maximum = count;
+                        stStatus.Value = 0;
+                    });
 
-                realLeftMask.ConvertTo(leftConvertedMask, DepthType.Cv8U);
-                realRightMask.ConvertTo(rightConvertedMask, DepthType.Cv8U);
+                    string[] lines = File.ReadAllLines("data2.txt");
 
-                System.Drawing.Point[] corners = new System.Drawing.Point[] {
+                    // parse the data into an array of doubles
+                    float[] data = new float[lines.Length];
+                    int i, j;
+                    for (i = 0; i < lines.Length; i++)
+                    {
+                        data[i] = float.Parse(lines[i]);
+                    }
+
+                    DetailSphericalWarper detailSphericalWarper = new DetailSphericalWarper(data[0]);
+
+                    Mat leftMask = new Mat("mask1.jpg", ImreadModes.Grayscale);
+                    Mat rightMask = new Mat("mask2.jpg", ImreadModes.Grayscale);
+
+                    Mat realLeftMask = new Mat();
+                    Mat realRightMask = new Mat();
+
+                    CvInvoke.Resize(leftMask, realLeftMask, new System.Drawing.Size((int)data[37], (int)data[39]));
+                    CvInvoke.Resize(rightMask, realRightMask, new System.Drawing.Size((int)data[38], (int)data[39]));
+
+                    realLeftMask.ConvertTo(leftConvertedMask, DepthType.Cv8U);
+                    realRightMask.ConvertTo(rightConvertedMask, DepthType.Cv8U);
+
+                    System.Drawing.Point[] corners = new System.Drawing.Point[] {
                     new System.Drawing.Point((int)data[40],(int)data[41]),
                     new System.Drawing.Point((int)data[42],(int)data[43])
                 };
-                System.Drawing.Size[] sizes = new System.Drawing.Size[] {
+                    System.Drawing.Size[] sizes = new System.Drawing.Size[] {
                     new System.Drawing.Size((int)data[37], (int)data[39]),
                     new System.Drawing.Size((int)data[38], (int)data[39])
                 };
-                for (i = 0; i < 3; i++)
-                    for (j = 0; j < 3; j++)
+                    for (i = 0; i < 3; i++)
+                        for (j = 0; j < 3; j++)
+                        {
+                            LeftR[i, j] = data[1 + i * 3 + j];
+                            RightR[i, j] = data[10 + i * 3 + j];
+                            LeftK[i, j] = data[19 + i * 3 + j];
+                            RightK[i, j] = data[28 + i * 3 + j];
+                        }
+                    if (leftCapture.IsOpened && rightCapture.IsOpened)
                     {
-                        LeftR[i, j] = data[1 + i * 3 + j];
-                        RightR[i, j] = data[10 + i * 3 + j];
-                        LeftK[i, j] = data[19 + i * 3 + j];
-                        RightK[i, j] = data[28 + i * 3 + j];
+                        leftCapture.Read(leftMat);
+                        rightCapture.Read(rightMat);
                     }
-                if (leftCapture.IsOpened && rightCapture.IsOpened)
-                {
-                    leftCapture.Read(leftMat);
-                    rightCapture.Read(rightMat);
-                }
 
-                UMat leftXMap = new UMat();
-                UMat leftYMap = new UMat();
+                    UMat leftXMap = new UMat();
+                    UMat leftYMap = new UMat();
 
-                UMat rightXMap = new UMat();
-                UMat rightYMap = new UMat();
+                    UMat rightXMap = new UMat();
+                    UMat rightYMap = new UMat();
 
-                detailSphericalWarper.BuildMaps(leftMat.Size, LeftK.Mat, LeftR.Mat, leftXMap, leftYMap);
-                detailSphericalWarper.BuildMaps(rightMat.Size, RightK.Mat, RightR.Mat, rightXMap, rightYMap);
+                    detailSphericalWarper.BuildMaps(leftMat.Size, LeftK.Mat, LeftR.Mat, leftXMap, leftYMap);
+                    detailSphericalWarper.BuildMaps(rightMat.Size, RightK.Mat, RightR.Mat, rightXMap, rightYMap);
 
-                int tempcount = count;
+                    int tempcount = count;
 
-                using (VideoWriter videoWriter = new VideoWriter(outputPath, VideoWriter.Fourcc('M' , 'J' , 'P' , 'G')  , 25, new System.Drawing.Size(sampleOutputMat.Width, sampleOutputMat.Height), true))
-                {
                     while (leftCapture.IsOpened && rightCapture.IsOpened && tempcount > 0)
                     {
                         leftCapture.Read(leftMat);
@@ -178,7 +182,7 @@ namespace WPFVideoStitch
                         using (Mat leftWarped = new Mat())
                         using (Mat rightWarped = new Mat())
                         {
-                            if(CudaInvoke.HasCuda)
+                            if (CudaInvoke.HasCuda)
                             {
                                 CudaInvoke.Remap(leftMat, leftWarped, leftXMap, leftYMap, Inter.Nearest);
                                 CudaInvoke.Remap(rightMat, rightWarped, rightXMap, rightYMap, Inter.Nearest);
@@ -208,10 +212,9 @@ namespace WPFVideoStitch
                                         videoWriter.Write(showing_mat);
                                         videoWriter.Write(showing_mat);
                                     }
-
                                     System.Windows.Application.Current.Dispatcher.Invoke(() =>
                                     {
-                                        stStatus.Value += 3;
+                                        stStatus.Value += 2;
                                     });
                                 }
                             }
@@ -229,16 +232,25 @@ namespace WPFVideoStitch
 
                         // Access the duration values
                         int totalSeconds = (int)duration.TotalSeconds;
-
                     }
-                }
 
-                System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        stStatus.Visibility = Visibility.Collapsed;
+                        pbText.Visibility = Visibility.Collapsed;
+                        this.IsEnabled = true;
+
+                        System.Windows.MessageBox.Show("Saved Successfully!", "Success!");
+                        this.Close();
+                    });
+                } catch (Exception ex)
                 {
-                    stStatus.Visibility = Visibility.Collapsed;
-                    pbText.Visibility = Visibility.Collapsed;
-                    this.IsEnabled = true;
-                });
+                    System.Windows.MessageBox.Show("Please select the output file name correctly!", "Error!");
+                }
+            }
+            else
+            {
+                System.Windows.MessageBox.Show("Please stitch first!", "Error!");
             }
         }
 
@@ -320,10 +332,8 @@ namespace WPFVideoStitch
                         }
                     }
                 }
-
             }
         }
-
 
 
         private void Button_Click_1(object sender, RoutedEventArgs e)

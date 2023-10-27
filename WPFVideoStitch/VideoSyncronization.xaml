@@ -71,7 +71,7 @@
 
 
             <Button Height="30" Grid.Column="2" Content="Synchronise" Click="Syncronize_Click" Margin="121,4,48,123" Grid.ColumnSpan="4" ></Button>
-            <Button Height="30" Content="Cancel" Grid.Column="7" Click="CancleButton_Click" Margin="20,4,-10,123" Grid.ColumnSpan="2" />
+            <Button Height="30" Content="Close" Grid.Column="7" Click="CancleButton_Click" Margin="20,4,-10,123" Grid.ColumnSpan="2" />
             <Button Height="30" Content="Apply" Grid.Column="5" Click="ApplyButton_Click" Margin="15,4,45,123" Grid.ColumnSpan="3" />
 
         </Grid>
