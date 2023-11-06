@@ -6,10 +6,15 @@
     <TargetFramework>net6.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
+    <ApplicationIcon>—Pngtree—video vector icon_3730784.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
     <None Remove="images\pause.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="—Pngtree—video vector icon_3730784.ico" />
   </ItemGroup>
 
   <ItemGroup>

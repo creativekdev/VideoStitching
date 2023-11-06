@@ -32,6 +32,8 @@ namespace WPFVideoStitch
     {
 
         String left, right;
+        String selectedCombo = "";
+        int renderWorkingFlag = 1;
 
         VideoCapture leftCapture = new VideoCapture();
         VideoCapture rightCapture = new VideoCapture();
@@ -53,6 +55,7 @@ namespace WPFVideoStitch
         public Render(String left, String right , int frameCount , double startValue , double endValue)
         {
             InitializeComponent();
+            Closing += Rendering_Close;
             savePath.Text = Properties.Settings.Default.LastFilePath;
             outputPath = savePath.Text;
 
@@ -78,6 +81,12 @@ namespace WPFVideoStitch
             }
         }
 
+
+        private void Rendering_Close(object sender , System.ComponentModel.CancelEventArgs e)
+        {
+            renderWorkingFlag = 0;
+        }
+
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             System.Threading.Thread preview = new System.Threading.Thread(CallStitching);
@@ -91,163 +100,186 @@ namespace WPFVideoStitch
             {
 
                 Mat sampleOutputMat = new Mat("result.jpg");
-
-                try
+                int outputWidth = sampleOutputMat.Width;
+                int outputHeight = sampleOutputMat.Height;
+                if(outputWidth > 3920)
                 {
-                    VideoWriter videoWriter = new VideoWriter(outputPath,VideoWriter.Fourcc('M' , 'J' , 'P' , 'G') , 25, new System.Drawing.Size(sampleOutputMat.Width, sampleOutputMat.Height), true);
-
-                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                    outputHeight = outputHeight * 3920 / outputWidth;
+                    outputWidth = 3920;
+                }
+                if(selectedCombo != "")
+                {
+                    try
                     {
-                        stStatus.Visibility = Visibility.Visible;
-                        pbText.Visibility = Visibility.Visible;
-                        this.IsEnabled = false;
+                        VideoWriter videoWriter;
+                        if (selectedCombo == "H.264")
+                        {
+                            videoWriter = new VideoWriter(outputPath, VideoWriter.Fourcc('X', '2', '6', '4'), 25, new System.Drawing.Size(outputWidth, outputHeight), true);
+                        }
+                        else
+                        {
+                            videoWriter = new VideoWriter(outputPath, VideoWriter.Fourcc('H', 'E', 'V', 'C'), 25, new System.Drawing.Size(outputWidth, outputHeight), true);
+                        }
 
-                        stStatus.Maximum = count;
-                        stStatus.Value = 0;
-                    });
 
-                    string[] lines = File.ReadAllLines("data2.txt");
+                        System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            stStatus.Visibility = Visibility.Visible;
+                            pbText.Visibility = Visibility.Visible;
+                            this.IsEnabled = false;
 
-                    // parse the data into an array of doubles
-                    float[] data = new float[lines.Length];
-                    int i, j;
-                    for (i = 0; i < lines.Length; i++)
-                    {
-                        data[i] = float.Parse(lines[i]);
-                    }
+                            stStatus.Maximum = count;
+                            stStatus.Value = 0;
+                        });
 
-                    DetailSphericalWarper detailSphericalWarper = new DetailSphericalWarper(data[0]);
+                        string[] lines = File.ReadAllLines("data2.txt");
 
-                    Mat leftMask = new Mat("mask1.jpg", ImreadModes.Grayscale);
-                    Mat rightMask = new Mat("mask2.jpg", ImreadModes.Grayscale);
+                        // parse the data into an array of doubles
+                        float[] data = new float[lines.Length];
+                        int i, j;
+                        for (i = 0; i < lines.Length; i++)
+                        {
+                            data[i] = float.Parse(lines[i]);
+                        }
 
-                    Mat realLeftMask = new Mat();
-                    Mat realRightMask = new Mat();
+                        DetailSphericalWarper detailSphericalWarper = new DetailSphericalWarper(data[0]);
 
-                    CvInvoke.Resize(leftMask, realLeftMask, new System.Drawing.Size((int)data[37], (int)data[39]));
-                    CvInvoke.Resize(rightMask, realRightMask, new System.Drawing.Size((int)data[38], (int)data[39]));
+                        Mat leftMask = new Mat("mask1.jpg", ImreadModes.Grayscale);
+                        Mat rightMask = new Mat("mask2.jpg", ImreadModes.Grayscale);
 
-                    realLeftMask.ConvertTo(leftConvertedMask, DepthType.Cv8U);
-                    realRightMask.ConvertTo(rightConvertedMask, DepthType.Cv8U);
+                        Mat realLeftMask = new Mat();
+                        Mat realRightMask = new Mat();
 
-                    System.Drawing.Point[] corners = new System.Drawing.Point[] {
+                        CvInvoke.Resize(leftMask, realLeftMask, new System.Drawing.Size((int)data[37], (int)data[39]));
+                        CvInvoke.Resize(rightMask, realRightMask, new System.Drawing.Size((int)data[38], (int)data[39]));
+
+                        realLeftMask.ConvertTo(leftConvertedMask, DepthType.Cv8U);
+                        realRightMask.ConvertTo(rightConvertedMask, DepthType.Cv8U);
+
+                        System.Drawing.Point[] corners = new System.Drawing.Point[] {
                     new System.Drawing.Point((int)data[40],(int)data[41]),
                     new System.Drawing.Point((int)data[42],(int)data[43])
                 };
-                    System.Drawing.Size[] sizes = new System.Drawing.Size[] {
+                        System.Drawing.Size[] sizes = new System.Drawing.Size[] {
                     new System.Drawing.Size((int)data[37], (int)data[39]),
                     new System.Drawing.Size((int)data[38], (int)data[39])
                 };
-                    for (i = 0; i < 3; i++)
-                        for (j = 0; j < 3; j++)
+                        for (i = 0; i < 3; i++)
+                            for (j = 0; j < 3; j++)
+                            {
+                                LeftR[i, j] = data[1 + i * 3 + j];
+                                RightR[i, j] = data[10 + i * 3 + j];
+                                LeftK[i, j] = data[19 + i * 3 + j];
+                                RightK[i, j] = data[28 + i * 3 + j];
+                            }
+                        if (leftCapture.IsOpened && rightCapture.IsOpened)
                         {
-                            LeftR[i, j] = data[1 + i * 3 + j];
-                            RightR[i, j] = data[10 + i * 3 + j];
-                            LeftK[i, j] = data[19 + i * 3 + j];
-                            RightK[i, j] = data[28 + i * 3 + j];
+                            leftCapture.Read(leftMat);
+                            rightCapture.Read(rightMat);
                         }
-                    if (leftCapture.IsOpened && rightCapture.IsOpened)
-                    {
-                        leftCapture.Read(leftMat);
-                        rightCapture.Read(rightMat);
-                    }
 
-                    UMat leftXMap = new UMat();
-                    UMat leftYMap = new UMat();
+                        UMat leftXMap = new UMat();
+                        UMat leftYMap = new UMat();
 
-                    UMat rightXMap = new UMat();
-                    UMat rightYMap = new UMat();
+                        UMat rightXMap = new UMat();
+                        UMat rightYMap = new UMat();
 
-                    detailSphericalWarper.BuildMaps(leftMat.Size, LeftK.Mat, LeftR.Mat, leftXMap, leftYMap);
-                    detailSphericalWarper.BuildMaps(rightMat.Size, RightK.Mat, RightR.Mat, rightXMap, rightYMap);
+                        detailSphericalWarper.BuildMaps(leftMat.Size, LeftK.Mat, LeftR.Mat, leftXMap, leftYMap);
+                        detailSphericalWarper.BuildMaps(rightMat.Size, RightK.Mat, RightR.Mat, rightXMap, rightYMap);
 
-                    int tempcount = count;
+                        int tempcount = count;
 
-                    while (leftCapture.IsOpened && rightCapture.IsOpened && tempcount > 0)
-                    {
-                        leftCapture.Read(leftMat);
-                        rightCapture.Read(rightMat);
-
-                        leftCapture.Read(leftMat);
-                        rightCapture.Read(rightMat);
-
-                        tempcount -= 2;
-
-                        if (leftMat.IsEmpty || rightMat.IsEmpty)
-                            break;
-
-                        Stopwatch stopwatch = new Stopwatch();
-                        stopwatch.Start();
-
-                        using (Mat leftWarped = new Mat())
-                        using (Mat rightWarped = new Mat())
+                        while (leftCapture.IsOpened && rightCapture.IsOpened && tempcount > 0 && renderWorkingFlag == 1)
                         {
-                            if (CudaInvoke.HasCuda)
-                            {
-                                CudaInvoke.Remap(leftMat, leftWarped, leftXMap, leftYMap, Inter.Nearest);
-                                CudaInvoke.Remap(rightMat, rightWarped, rightXMap, rightYMap, Inter.Nearest);
-                            }
-                            else
-                            {
-                                CvInvoke.Remap(leftMat, leftWarped, leftXMap, leftYMap, Inter.Nearest);
-                                CvInvoke.Remap(rightMat, rightWarped, rightXMap, rightYMap, Inter.Nearest);
-                            }
+                            leftCapture.Read(leftMat);
+                            rightCapture.Read(rightMat);
 
-                            using (Blender blender = new MultiBandBlender())
-                            {
-                                blender.Prepare(corners, sizes);
-                                blender.Feed(leftWarped, leftConvertedMask, corners[0]);
-                                blender.Feed(rightWarped, rightConvertedMask, corners[1]);
+                            leftCapture.Read(leftMat);
+                            rightCapture.Read(rightMat);
 
-                                using (Mat resultImage = new Mat())
-                                using (Mat resultMask = new Mat())
+                            tempcount -= 2;
+
+                            if (leftMat.IsEmpty || rightMat.IsEmpty)
+                                break;
+
+                            Stopwatch stopwatch = new Stopwatch();
+                            stopwatch.Start();
+
+                            using (Mat leftWarped = new Mat())
+                            using (Mat rightWarped = new Mat())
+                            {
+                                if (CudaInvoke.HasCuda)
                                 {
-                                    blender.Blend(resultImage, resultMask);
-                                    if (resultImage.Depth != DepthType.Cv8U)
-                                        resultImage.ConvertTo(resultImage, DepthType.Cv8U);
-                                    using (Mat showing_mat = new Mat())
-                                    {
-                                        CvInvoke.Resize(resultImage, showing_mat, new System.Drawing.Size(sampleOutputMat.Width, sampleOutputMat.Height));
+                                    CudaInvoke.Remap(leftMat, leftWarped, leftXMap, leftYMap, Inter.Nearest);
+                                    CudaInvoke.Remap(rightMat, rightWarped, rightXMap, rightYMap, Inter.Nearest);
+                                }
+                                else
+                                {
+                                    CvInvoke.Remap(leftMat, leftWarped, leftXMap, leftYMap, Inter.Nearest);
+                                    CvInvoke.Remap(rightMat, rightWarped, rightXMap, rightYMap, Inter.Nearest);
+                                }
 
-                                        videoWriter.Write(showing_mat);
-                                        videoWriter.Write(showing_mat);
-                                    }
-                                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                                using (Blender blender = new MultiBandBlender())
+                                {
+                                    blender.Prepare(corners, sizes);
+                                    blender.Feed(leftWarped, leftConvertedMask, corners[0]);
+                                    blender.Feed(rightWarped, rightConvertedMask, corners[1]);
+
+                                    using (Mat resultImage = new Mat())
+                                    using (Mat resultMask = new Mat())
                                     {
-                                        stStatus.Value += 2;
-                                    });
+                                        blender.Blend(resultImage, resultMask);
+                                        if (resultImage.Depth != DepthType.Cv8U)
+                                            resultImage.ConvertTo(resultImage, DepthType.Cv8U);
+                                        using (Mat showing_mat = new Mat())
+                                        {
+                                            CvInvoke.Resize(resultImage, showing_mat, new System.Drawing.Size(outputWidth, outputHeight));
+
+                                            videoWriter.Write(showing_mat);
+                                            videoWriter.Write(showing_mat);
+                                        }
+                                        System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                                        {
+                                            stStatus.Value += 2;
+                                        });
+                                    }
                                 }
                             }
+
+                            stopwatch.Stop();
+                            TimeSpan duration = stopwatch.Elapsed;
+
+                            // Access the duration value in milliseconds
+                            double milliseconds = duration.TotalMilliseconds;
+                            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                            {
+                                pbText.Text = ((int)(2000 / milliseconds)).ToString() + "fps";
+                            });
+
+                            // Access the duration values
+                            int totalSeconds = (int)duration.TotalSeconds;
                         }
 
-                        stopwatch.Stop();
-                        TimeSpan duration = stopwatch.Elapsed;
-
-                        // Access the duration value in milliseconds
-                        double milliseconds = duration.TotalMilliseconds;
                         System.Windows.Application.Current.Dispatcher.Invoke(() =>
                         {
-                            pbText.Text = ((int)(2000 / milliseconds)).ToString() + "fps";
+                            stStatus.Visibility = Visibility.Collapsed;
+                            pbText.Visibility = Visibility.Collapsed;
+                            this.IsEnabled = true;
+
+                            videoWriter.Dispose();
+
+                            System.Windows.MessageBox.Show("Saved Successfully!", "Success!");
+                            this.Close();
                         });
-
-                        // Access the duration values
-                        int totalSeconds = (int)duration.TotalSeconds;
                     }
-
-                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                    catch (Exception ex)
                     {
-                        stStatus.Visibility = Visibility.Collapsed;
-                        pbText.Visibility = Visibility.Collapsed;
-                        this.IsEnabled = true;
-
-                        videoWriter.Dispose();
-
-                        System.Windows.MessageBox.Show("Saved Successfully!", "Success!");
-                        this.Close();
-                    });
-                } catch (Exception ex)
+                        System.Windows.MessageBox.Show("Please select the output file name correctly!", "Error!");
+                    }
+                }
+                else
                 {
-                    System.Windows.MessageBox.Show("Please select the output file name correctly!", "Error!");
+                    System.Windows.MessageBox.Show("Please select codec.", "Error!");
                 }
             }
             else
@@ -339,6 +371,12 @@ namespace WPFVideoStitch
         private void Button_Click_1(object sender, RoutedEventArgs e)
         {
             this.Close();
+        }
+
+        private void combobox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            ComboBoxItem comboBoxItem = combobox.SelectedItem as ComboBoxItem;
+            selectedCombo = comboBoxItem.Content as String;
         }
 
         private void Button_Click_2(object sender, RoutedEventArgs e)

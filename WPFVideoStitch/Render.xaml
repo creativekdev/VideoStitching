@@ -6,24 +6,27 @@
         xmlns:local="clr-namespace:WPFVideoStitch"
         mc:Ignorable="d"
         Title="Render" Height="215" Width="385">
-    <Grid Margin="0,0,0,-6" Background="#FF2A2929">
+    <Grid Background="#FF2A2929" Height="430" VerticalAlignment="Top">
         <Grid.RowDefinitions>
             <RowDefinition Height="17*"/>
             <RowDefinition Height="2*"/>
             <RowDefinition Height="88*"/>
         </Grid.RowDefinitions>
-        <Border BorderBrush="White" BorderThickness="1" HorizontalAlignment="Center" Height="104" VerticalAlignment="Top" Width="343" Grid.Row="2" Margin="0,2,0,0">
-            <TextBox x:Name="savePath" HorizontalAlignment="Center" Height="21" Margin="0,20,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="146"
+        <Border BorderBrush="White" BorderThickness="1" HorizontalAlignment="Center" Height="125" VerticalAlignment="Top" Width="343" Margin="0,17,0,0" Grid.RowSpan="3">
+            <TextBox x:Name="savePath" HorizontalAlignment="Center" Height="21" Margin="0,26,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="146"
                      IsReadOnly="True"/>
         </Border>
-        <Label Content="Output Path :" HorizontalAlignment="Left" Margin="27,19,0,0" VerticalAlignment="Top" Width="81" Foreground="White" Grid.Row="2"/>
-        <Button Content="..." HorizontalAlignment="Left" Margin="285,23,0,0" VerticalAlignment="Top" Width="33" Click="Button_Click_2" Grid.Row="2"/>
-        <Button Content="Save" HorizontalAlignment="Left" Margin="170,72,0,0" VerticalAlignment="Top" Width="58" Grid.Row="2" Click="Button_Click"/>
-        <Button Content="Close" HorizontalAlignment="Left" Margin="255,71,0,0" VerticalAlignment="Top" Width="56" Height="20" Grid.Row="2" Click="Button_Click_1"/>
-
-        <ProgressBar Style="{DynamicResource ProgressBarStyleforMerge}" Minimum="0" Maximum="100" x:Name="stStatus" HorizontalAlignment="Center" Width="297" Margin="0,117,0,20" Grid.Row="2"/>
-        <TextBlock Text="loading..." x:Name="pbText" VerticalAlignment="Top" Margin="153,117,137,0" Grid.Row="2" />
-
+        <Label Content="Output Path :" HorizontalAlignment="Left" Margin="27,42,0,0" VerticalAlignment="Top" Width="81" Foreground="White"/>
+        <Label Content="Codec :" HorizontalAlignment="Left" Margin="58,8,0,0" VerticalAlignment="Top" Width="50" Foreground="White" Grid.RowSpan="2" Grid.Row="1"/>
+        <Button Content="..." HorizontalAlignment="Left" Margin="281,47,0,0" VerticalAlignment="Top" Width="33" Click="Button_Click_2"/>
+        <Button Content="Save" HorizontalAlignment="Left" Margin="170,39,0,0" VerticalAlignment="Top" Width="58" Grid.Row="2" Click="Button_Click"/>
+        <Button Content="Close" HorizontalAlignment="Left" Margin="255,38,0,0" VerticalAlignment="Top" Width="56" Height="20" Grid.Row="2" Click="Button_Click_1"/>
+        <ProgressBar Style="{DynamicResource ProgressBarStyleforMerge}" Minimum="0" Maximum="100" x:Name="stStatus" HorizontalAlignment="Center" Width="331" Margin="0,80,0,256" Grid.Row="2"/>
+        <TextBlock Text="loading..." x:Name="pbText" VerticalAlignment="Top" Margin="163,82,162,0" Grid.Row="2" />
+        <ComboBox x:Name="combobox" Margin="111,3,112,330" SelectionChanged="combobox_SelectionChanged" Grid.Row="2" Height="21" >
+            <ComboBoxItem Content="H.264" />
+            <ComboBoxItem Content="H.265" />
+        </ComboBox>
 
     </Grid>
 
