@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WPFVideoStitch" xmlns:oxy="clr-namespace:OxyPlot.Wpf;assembly=OxyPlot.Wpf"
         mc:Ignorable="d"
-        Title="VideoSyncronization" Height="500" Width="450" ResizeMode="NoResize">
+        Title="VideoSyncronization" Height="320" Width="450" ResizeMode="NoResize">
     <Grid Background="#FF2A2929">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="443*"/>
@@ -15,10 +15,10 @@
             <RowDefinition Height="50" />
             <RowDefinition Height="100" />
             <RowDefinition Height="20" />
-            <RowDefinition Height="200" />
-            <RowDefinition Height="100" />
+            <RowDefinition Height="300" />
+            <RowDefinition Height="0" />
         </Grid.RowDefinitions>
-        <Label Content="Audio synchronization" HorizontalAlignment="Left" Margin="20,0,0,0" VerticalAlignment="Center" Foreground="White"/>
+        <Label Content="Audio synchronization" HorizontalAlignment="Left" Margin="20,0,0,0" VerticalAlignment="Center" Foreground="White" Height="26" Width="128"/>
         <Grid Grid.Row="1" Grid.ColumnSpan="2">
             <Grid.RowDefinitions>
                 <RowDefinition Height="30" />
@@ -29,49 +29,33 @@
                     <ColumnDefinition Width="200"></ColumnDefinition>
                     <ColumnDefinition Width="auto"></ColumnDefinition>
                 </Grid.ColumnDefinitions>
-                <Label Content="Maximum search range" HorizontalAlignment="Left" Margin="20,0,0,0" Grid.Column="0" VerticalAlignment="Center" Foreground="White"/>
-                <TextBox  Grid.Column="1" Width="200" Margin="0 0 20 0" TextAlignment="Center" VerticalContentAlignment="Center"   Text="30.00s"/>
-            </Grid>
-            <Grid Grid.Row="1">
-                <Button Height="30" Margin="20 5" Content="Use Audio to sync Video" Click="Syncronize_Click" ></Button>
+                <Label Content="Maximum search range (s)" HorizontalAlignment="Left" Margin="20,0,0,0" Grid.Column="0" VerticalAlignment="Center" Foreground="White"/>
+                <TextBox x:Name="searchRange" Grid.Column="1" Width="200" Margin="0 0 20 0" TextAlignment="Center" VerticalContentAlignment="Center"   Text="30" TextChanged="TextBox_TextChanged" PreviewTextInput="TextBox_PreviewTextInput"/>
             </Grid>
         </Grid>
-        <Grid Grid.Row="3" Grid.ColumnSpan="2">
-            <ListView  Height="90" Margin="0,10,0,0" 
-              VerticalAlignment="Top" x:Name="listView" d:ItemsSource="{d:SampleData ItemCount=5}">
-                <ListView.View>
+        <Grid Grid.Row="1" Grid.ColumnSpan="2" Margin="0,32,0,167" Grid.RowSpan="3">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="137*"/>
+                <ColumnDefinition Width="88*"/>
+            </Grid.ColumnDefinitions>
+            <TextBox IsEnabled="false" HorizontalAlignment="Left" TextAlignment="Center" Height="24" Margin="26,27,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="170" Text="Video" Background="#FF3E3C3C" Foreground="White"/>
+            <TextBox IsEnabled="false" HorizontalAlignment="Left" TextAlignment="Center" Height="24" Margin="196,27,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="106" Text="Start time" Background="#FF3E3C3C" Foreground="White" Grid.ColumnSpan="2"/>
+            <TextBox IsEnabled="false" HorizontalAlignment="Center" TextAlignment="Center" Height="24" Margin="0,27,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120" Text="Nearest frame" Background="#FF3E3C3C" Foreground="White" Grid.Column="1"/>
 
-                    <GridView>
-                        <GridViewColumn DisplayMemberBinding= "{Binding Path=Video}" 
-                                Header="Video" Width="200">
-                            <GridViewColumn.HeaderContainerStyle>
-                                <Style TargetType="{x:Type GridViewColumnHeader}">
-                                    <Setter Property="HorizontalContentAlignment" Value="Left" />
-                                </Style>
-                            </GridViewColumn.HeaderContainerStyle>
-                        </GridViewColumn>
-                        <GridViewColumn DisplayMemberBinding= "{Binding Path=StartTime}" 
-                                Header="Start Time" Width="100">
-                            <GridViewColumn.HeaderContainerStyle>
-                                <Style TargetType="{x:Type GridViewColumnHeader}">
-                                    <Setter Property="HorizontalContentAlignment" Value="Left" />
-                                </Style>
-                            </GridViewColumn.HeaderContainerStyle>
-                        </GridViewColumn>
-                        <GridViewColumn DisplayMemberBinding= "{Binding Path=NearestFrame}" 
-                                Header="Nearest frame" Width="100">
-                            <GridViewColumn.HeaderContainerStyle>
-                                <Style TargetType="{x:Type GridViewColumnHeader}">
-                                    <Setter Property="HorizontalContentAlignment" Value="Left" />
-                                </Style>
-                            </GridViewColumn.HeaderContainerStyle>
-                        </GridViewColumn>
-                    </GridView>
-                </ListView.View>
-            </ListView>
+            <TextBox IsEnabled="false" x:Name="firstVideoName" HorizontalAlignment="Left" Height="24" Margin="26,50,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="170" Background="#FF2A2929" Foreground="White"/>
+
+            <TextBox IsEnabled="false" x:Name="secondVideoName" HorizontalAlignment="Left" Height="24" Margin="26,73,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="170" Background="#FF2A2929" Foreground="White"/>
+
+            <TextBox IsReadOnly="True" x:Name="firstVideoSecond" HorizontalAlignment="Left" TextAlignment="Center" Height="24" Margin="196,50,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="106" Background="#FFAEAEAE" Foreground="Black" Grid.ColumnSpan="2"/>
+            <TextBox x:Name="firstVideoFrame" PreviewTextInput="TextBox_PreviewTextInput"  HorizontalAlignment="Center" TextAlignment="Center" Height="24" Margin="0,50,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120" Background="#FFAEAEAE" Foreground="Black" TextChanged="firstVideoFrame_TextChanged" Grid.Column="2"/>
+
+            <TextBox IsReadOnly="True" x:Name="secondVideoSecond" HorizontalAlignment="Left" TextAlignment="Center" Height="24" Margin="196,73,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="106" Background="#FFAEAEAE" Foreground="Black" Grid.ColumnSpan="2"/>
+            <TextBox x:Name="secondVideoFrame" PreviewTextInput="TextBox_PreviewTextInput"  HorizontalAlignment="Center" TextAlignment="Center" Height="24" Margin="0,73,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120" Background="#FFAEAEAE" Foreground="Black" TextChanged="secondVideoFrame_TextChanged" Grid.Column="2"/>
+
+            <ProgressBar Style="{DynamicResource ProgressBarStyleforMerge}" Minimum="0" Maximum="100" x:Name="stStatus" IsIndeterminate="True" Margin="10,109,10,95" Grid.ColumnSpan="2" />
         </Grid>
 
-        <Grid Grid.Row="4" Grid.ColumnSpan="2">
+        <Grid Grid.Row="3" Grid.ColumnSpan="2" Margin="0,62,0,81">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="10"></ColumnDefinition>
                 <ColumnDefinition Width="50"></ColumnDefinition>
@@ -83,10 +67,12 @@
                 <ColumnDefinition Width="50"></ColumnDefinition>
                 <ColumnDefinition Width="10"></ColumnDefinition>
             </Grid.ColumnDefinitions>
-            <Button Height="30" Width="50"  Grid.Column="1"  Content="Reset" Click="ReSetButton_Click"  ></Button>
-            <Button Height="30" Grid.Column="3" Content="Ok"  ></Button>
-            <Button Height="30" Content="Cancel" Grid.Column="5" ></Button>
-            <Button Height="30" Content="Apply" Grid.Column="7" ></Button>
+            <Button Height="30" Width="50"  Grid.Column="1"  Content="Reset" Click="ReSetButton_Click" Grid.ColumnSpan="2" Margin="16,4,144,123"  ></Button>
+
+
+            <Button Height="30" Grid.Column="2" Content="Synchronise" Click="Syncronize_Click" Margin="121,4,48,123" Grid.ColumnSpan="4" ></Button>
+            <Button Height="30" Content="Close" Grid.Column="7" Click="CancleButton_Click" Margin="20,4,-10,123" Grid.ColumnSpan="2" />
+            <Button Height="30" Content="Apply" Grid.Column="5" Click="ApplyButton_Click" Margin="15,4,45,123" Grid.ColumnSpan="3" />
 
         </Grid>
     </Grid>

@@ -5,7 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WPFVideoStitch"
         mc:Ignorable="d"
-        Title="MainWindow" Height="768" Width="1024" ResizeMode="NoResize">
+        Title="MainWindow" Height="768" Width="1024" ResizeMode="NoResize"
+        Closing="MainWindow_Closing">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="189*"/>
@@ -27,6 +28,13 @@
                             x:Name="ImportVideo"
                             Click="Import_Videos"
                             Content="Import Videos" Margin="100,172,800,138" />
+
+                    <Button
+                            x:Name="startPoint"
+                            Content="Set as Startpoint" Margin="877,100,23,220" Click="startPoint_Click" />
+                    <Button
+                            x:Name="endPoint"
+                            Content="Set as Endpoint" Margin="877,150,23,170" Click="endPoint_Click" />
                     <Grid
                     HorizontalAlignment="Left"
                     Margin="250,10,10,10"
@@ -43,13 +51,16 @@
                                 <RowDefinition Height="auto"></RowDefinition>
                             </Grid.RowDefinitions>
                             <Border
-                        x:Name="webcamContainer"
-                       Grid.Row="0"
-                        Width="300"
-                        Height="300"
-                        BorderBrush="White"
-                        BorderThickness="2">
-                                <MediaElement x:Name="leftVideoCtl"  LoadedBehavior="Manual"  UnloadedBehavior="Stop" MediaOpened="leftVideoCtl_MediaOpened"/>
+                                x:Name="webcamContainer"
+                               Grid.Row="0"
+                                Width="300"
+                                Height="300"
+                                BorderBrush="White"
+                                BorderThickness="2">
+                                <Grid x:Name="leftMediaGrid" AllowDrop="True"  DragEnter="leftMedia_DragEnter" Drop="leftMedia_Drop" Background="Transparent">
+                                    <!-- <MediaElement x:Name="leftVideoCtl"  LoadedBehavior="Manual"  UnloadedBehavior="Stop" MediaOpened="leftVideoCtl_MediaOpened" />-->
+                                    <Image  x:Name="leftVideoCtl"/>
+                                </Grid>
                             </Border>
                             <StackPanel  Grid.Row="1" Width="300" HorizontalAlignment="Center" Orientation="Horizontal">
 
@@ -59,8 +70,7 @@
                                 <!-- Volume slider. This slider allows a Volume range between 0 and 1. -->
 
                                 <Slider Name="LeftSlide" Width="250" VerticalAlignment="Center" 
-                                        Maximum="{Binding ElementName=leftVideoCtl, Path=NaturalDuration.TimeSpan.TotalSeconds}"
-                                        ValueChanged="LeftSlide_ValueChanged" 
+                                        ValueChanged="LeftSlide_ValueChanged" Maximum="100"
                                         Thumb.DragStarted="LeftSlide_DragStart" Thumb.DragCompleted="LeftSlide_DragCompleted"/>
 
                             </StackPanel>
@@ -71,12 +81,15 @@
                                 <RowDefinition Height="50"></RowDefinition>
                             </Grid.RowDefinitions>
                             <Border
-                       Grid.Row="0"
-                        Width="300"
-                        Height="300"
-                        BorderBrush="White"
-                        BorderThickness="2">
-                                <MediaElement  x:Name="rightVideoCtl"  LoadedBehavior="Manual"  UnloadedBehavior="Stop" MediaOpened="rightVideoCtl_MediaOpened"/>
+                               Grid.Row="0"
+                                Width="300"
+                                Height="300"
+                                BorderBrush="White"
+                                BorderThickness="2">
+                                <Grid x:Name="rightMediaGrid" AllowDrop="True"  DragEnter="rightMedia_DragEnter" Drop="rightMedia_Drop" Background="Transparent">
+                                    <!--<MediaElement  x:Name="rightVideoCtl"  LoadedBehavior="Manual"  UnloadedBehavior="Stop" MediaOpened="rightVideoCtl_MediaOpened"/>-->
+                                    <Image  x:Name="rightVideoCtl"/>
+                                </Grid>
                             </Border>
                             <StackPanel  Grid.Row="1" Width="300" HorizontalAlignment="Center" Orientation="Horizontal">
 
@@ -86,8 +99,7 @@
                                 <!-- Volume slider. This slider allows a Volume range between 0 and 1. -->
 
                                 <Slider Name="RightSlide" Width="250" VerticalAlignment="Center" 
-                                        Maximum="{Binding ElementName=rightVideoCtl, Path=NaturalDuration.TimeSpan.TotalSeconds}" 
-                                        ValueChanged="RightSlide_ValueChanged"
+                                        ValueChanged="RightSlide_ValueChanged" Maximum="100"
                                         Thumb.DragStarted="RightSlide_DragStart" Thumb.DragCompleted="RightSlide_DragCompleted"/>
 
                             </StackPanel>
@@ -97,21 +109,21 @@
                     </Grid>
 
                 </Grid>
-                <Grid Grid.Row="1" Margin="0,0,0,-22">
+                <Grid Grid.Row="1" Margin="0,0,0,-32">
                     <Button
                             x:Name="Synchronization"
-                            Margin="100,40,800,282"
+                            Margin="100,40,800,287"
                             Click="Synchronization_Click"
                             Content="Synchronization"/>
                     <Button
                             x:Name="Stitch"
-                            Margin="100,120,800,203"
+                            Margin="100,120,800,209"
 
                             Click="Stitch_Click"
                             Content="Stitch" />
                     <Button
                             x:Name="Render"
-                            Margin="100,198,800,124"
+                            Margin="100,198,800,129"
                         
                             Click="Render_Click"
                             Content="Render" />
@@ -127,28 +139,23 @@
                         BorderThickness="2" Margin="250,0,149,0">
                             <Canvas>
                                 <!-- MediaElement -->
-                                <MediaElement x:Name="mergedVideoCtl"  LoadedBehavior="Manual"  UnloadedBehavior="Stop" MediaOpened="mergedVideoCtl_MediaOpened"
-                                    Canvas.Left="0" Canvas.Top="0" Width="625" Height="300"/>
+                                <!-- <MediaElement x:Name="mergedVideoCtl"  LoadedBehavior="Manual"  UnloadedBehavior="Stop" MediaOpened="mergedVideoCtl_MediaOpened"
+                                    Canvas.Left="0" Canvas.Top="0" Width="608" Height="298"/>-->
 
                                 <!-- Image -->
-                                <Image  x:Name="mergedImage" Canvas.Left="0" Canvas.Top="0"  Width="625" Height="300"/>
+                                <Image  x:Name="mergedImage"  Width="608" Height="298" HorizontalAlignment="Left" VerticalAlignment="Top" Canvas.Left="0" Canvas.Top="0"/>
                             </Canvas>
-
-
                         </Border>
-                        <StackPanel  Grid.Row="1" Width="656" Orientation="Horizontal" Margin="234,0,134,6">
+                        <StackPanel  Grid.Row="1" Width="363" HorizontalAlignment="Left" Orientation="Horizontal" Margin="512,0,0,0">
 
                             <!-- Play button. -->
-                            <Image Source="images\pause.png" Margin="12"  MouseDown="OnMouseDownPause1Media"/>
-                            <Slider x:Name="CenterSlide" Width="602" Height="22" 
-                                    Maximum="{Binding ElementName=mergedVideoCtl, Path=NaturalDuration.TimeSpan.TotalSeconds}" 
-                                    ValueChanged="CenterSlide_ValueChanged" 
-                                    Thumb.DragStarted="CenterSlide_DragStart" Thumb.DragCompleted="CenterSlide_DragCompleted"/>
+                            <Image Source="images\pause.png" MouseDown="OnMouseDownPause3Media" Margin="12" />
 
                             <!-- Volume slider. This slider allows a Volume range between 0 and 1. -->
 
-                        </StackPanel>
+                            <!--<Slider Name="centeralSlide" Width="561" VerticalAlignment="Center" ValueChanged="LeftSlide_ValueChanged" Maximum="100" Thumb.DragStarted="LeftSlide_DragStart" Thumb.DragCompleted="LeftSlide_DragCompleted" Height="24"/>-->
 
+                        </StackPanel>
                     </Grid>
                 </Grid>
             </Grid>
@@ -159,8 +166,8 @@
             Margin="100,64,800,246"
             Click="VideoMerger_Click"
             Content="Merge" Grid.ColumnSpan="2"/>
-        <ProgressBar Style="{DynamicResource ProgressBarStyleforMerge}" Minimum="0" Maximum="100" x:Name="stStatus" Margin="68,341,0,19" Grid.ColumnSpan="2" Grid.Row="1" HorizontalAlignment="Left" Width="868" />
-        <TextBlock Text="{Binding ElementName=stStatus, Path=Value, StringFormat={}{0:0}%}"
-                   x:Name="stText" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="802,333,0,0" Grid.Column="1" Grid.Row="1" Foreground="White" />
+        <!--<ProgressBar Style="{DynamicResource ProgressBarStyleforMerge}" Minimum="0" Maximum="100" x:Name="stStatus" Margin="117,336,0,18" Grid.ColumnSpan="2" Grid.Row="1" HorizontalAlignment="Left" Width="868" Height="25"/>-->
+        <ProgressBar Style="{DynamicResource ProgressBarStyleforMerge}" Minimum="0" Maximum="100"  IsIndeterminate="True" x:Name="stStatus" Margin="117,336,0,18" Grid.ColumnSpan="2" Grid.Row="1" HorizontalAlignment="Left" Width="868" Height="25"/>
+        <TextBlock x:Name="stText" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="383,333,0,0" Grid.Column="1" Grid.Row="1" Foreground="White" />
     </Grid>
 </Window>

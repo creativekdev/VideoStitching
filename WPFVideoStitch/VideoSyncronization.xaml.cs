@@ -31,15 +31,49 @@ using OxyPlot;
 using OxyPlot.WindowsForms;
 using System.ComponentModel;
 using System.Windows.Forms;
+using Emgu.CV;
+using Emgu.CV.Features2D;
+using System.Diagnostics;
+using java.util;
 
 namespace WPFVideoStitch
 {
     /// <summary>
     /// Interaction logic for VideoSyncronization.xaml
     /// </summary>
+    /// 
+
+    public class MyEventArgs : EventArgs
+    {
+        public int FrameCount { get; }
+
+        public MyEventArgs(int frameCount)
+        {
+            FrameCount = frameCount;
+        }
+    }
+
+    public class CloseEventArgs : EventArgs
+    {
+        public CloseEventArgs()
+        {
+        }
+    }
+
     public partial class VideoSyncronization : Window
     {
         String left, right;
+
+        public event EventHandler<MyEventArgs> MyEvent;
+        public event EventHandler<CloseEventArgs> CloseEvent;
+
+        int frameCount = 0;
+
+        double frameRate = 0;
+
+        int totalTimeLength = 30;//sec
+
+        double randomValue = 1;
 
         void ShowPlot(string str, float[] values1, float[] values2, float[] values3, int step)
         {
@@ -55,7 +89,7 @@ namespace WPFVideoStitch
             };
             for (int i = 0; i < values1.Length; i+=step)
             {
-                line1.Points.Add(new OxyPlot.DataPoint(i, values1[i]));
+                line1.Points.Add(new OxyPlot.DataPoint(i, values1[i] * 10 ));
             }
 
             var line2 = new OxyPlot.Series.LineSeries()
@@ -68,7 +102,7 @@ namespace WPFVideoStitch
             };
             for (int i = 0; i < values2.Length; i += step)
             {
-                line2.Points.Add(new OxyPlot.DataPoint(i, values2[i]));
+                line2.Points.Add(new OxyPlot.DataPoint(i, values2[i] * 10 + 1  ));
             }
 
             var line3 = new OxyPlot.Series.LineSeries()
@@ -89,7 +123,7 @@ namespace WPFVideoStitch
             var myModel = new PlotModel { Title = str };
             myModel.Series.Add(line1);
             myModel.Series.Add(line2);
-            myModel.Series.Add(line3);
+            //myModel.Series.Add(line3);
             //Assign PlotModel to PlotView
             myPlot.Model = myModel;
 
@@ -116,7 +150,21 @@ namespace WPFVideoStitch
         }
         private void Syncronize_Click(object sender, RoutedEventArgs e)
         {
+            System.Threading.Thread calculate = new System.Threading.Thread(Calculate);
+            calculate.Start();
+        }
 
+        private void Calculate()
+        {
+            /*            System.Threading.Thread thread = new System.Threading.Thread(GenerateAudioFiles);
+                        thread.Start();*/
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            {
+                stStatus.Visibility = Visibility.Visible;
+                this.IsEnabled = false;
+            });
+
+            GenerateAudioFiles();
             WaveFile waveContainer1;
             using (var stream = new FileStream("left.wav", System.IO.FileMode.Open))
             {
@@ -133,25 +181,55 @@ namespace WPFVideoStitch
 
             DiscreteSignal left2 = waveContainer2[Channels.Left];
 
+            /*            var mfccs1 = ExtractMFCCs(left1);
+                        var mfccs2 = ExtractMFCCs(left2);*/
 
-            var mfccs1 = ExtractMFCCs(left1);
-            var mfccs2 = ExtractMFCCs(left2);
-            float[] crossCorrelation = CalculateCrossCorrelation(mfccs1, mfccs2);
-            //ShowPlot("res", left1.Samples, left2.Samples, crossCorrelation);
-            // Find the index of the maximum correlation value (alignment)
+            DiscreteSignal res = Operation.CrossCorrelate(new DiscreteSignal(1, left1.Samples), new DiscreteSignal(1, left2.Samples));
+            float[] crossCorrelation = res.Samples;
+            /*
+            double[] flatMfccs1 = mfccs1.SelectMany(row => row).ToArray();
+            double[] flatMfccs2 = mfccs2.SelectMany(row => row).ToArray();
+
+            ShowPlot("res", flatMfccs1, flatMfccs2, crossCorrelation, 1);*/
+
             int maxIndex = Array.IndexOf(crossCorrelation, crossCorrelation.Max());
-            //int maxIndex = FindIndexOfMaximum(crossCorrelation);
-            
-            // Calculate the time delay (alignment) in frames
-            int timeDelayFrames = maxIndex - mfccs1.Length;
-            listView.Items.Clear();
-            listView.Items.Add(new MyItem { Video = left, StartTime = "0", NearestFrame = "0" });
-            listView.Items.Add(new MyItem { Video = right, StartTime = ((double)timeDelayFrames/(left1.SamplingRate)).ToString(), NearestFrame = timeDelayFrames.ToString() });
-            //var crossCorrelation = CalculateCrossCorrelation(mfccVectors1, mfccVectors2);
-            //            var xcorr = Operation.CrossCorrelate(left1, left2);
-            //            int maxIndex = Array.IndexOf(xcorr.Samples, xcorr.Samples.Max());
-            //          ShowPlot("res", xcorr.Samples, xcorr.Samples, xcorr.Samples, 1000);
 
+            //ShowPlot("res", left1.Samples, left2.Samples, crossCorrelation, 1000);
+
+            //int timeDelayFrames = mfccs2.Length - maxIndex + mfccs1.Length;
+            int timeDelayFrames = maxIndex - left1.Samples.Length;
+            
+            double calcDuration = left1.Duration > left2.Duration ? left2.Duration : left1.Duration;
+
+            if (calcDuration > totalTimeLength) calcDuration = totalTimeLength;
+            
+            if (timeDelayFrames < 0)
+            {
+                System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                {
+                    firstVideoFrame.Text = "0";
+                    firstVideoSecond.Text = "0ms";
+                    secondVideoFrame.Text = ((int)(-timeDelayFrames * calcDuration / left1.Samples.Length * frameRate)).ToString();
+                    secondVideoSecond.Text = ((int)(-timeDelayFrames * calcDuration * 1000 / left1.Samples.Length)).ToString() + "ms";
+                });
+            }
+            else
+            {
+                System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                {
+                    firstVideoFrame.Text = ((int)(timeDelayFrames * calcDuration / left1.Samples.Length * frameRate)).ToString();
+                    firstVideoSecond.Text = ((int)(timeDelayFrames * calcDuration * 1000 / left1.Samples.Length)).ToString() + "ms";
+                    secondVideoFrame.Text = "0";
+                    secondVideoSecond.Text = "0ms";
+                });
+            }
+
+            frameCount = (int)(timeDelayFrames * left1.Duration / left1.Samples.Length * frameRate);
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            {
+                stStatus.Visibility = Visibility.Collapsed;
+                this.IsEnabled = true;
+            });
         }
 
 
@@ -177,22 +255,18 @@ namespace WPFVideoStitch
                 SamplingRate = audioSignal.SamplingRate,
                 FeatureCount = 1,
                 FrameDuration = 0.032/*sec*/,
-                HopDuration = 0.015/*sec*/,
+                HopDuration = 0.015/*sec*/, 
                 FilterBankSize = 26,
                 PreEmphasis = 0.97,
-                //...unspecified parameters will have default values 
             };
-            // Create an MFCC feature extractor
             var mfccExtractor = new MfccExtractor(mfccOptions);
 
             // Compute MFCCs from the audio signal
             float[][] res= mfccExtractor.ComputeFrom(audioSignal).ToArray();
-            // Create a new double[][] array with the same dimensions
             int numRows = res.Length;
             int numCols = res[0].Length;
             double[][] doubleArray = new double[numRows][];
 
-            // Iterate through the floatArray and convert to doubleArray
             for (int i = 0; i < numRows; i++)
             {
                 doubleArray[i] = new double[numCols]; // Initialize sub-array
@@ -204,33 +278,142 @@ namespace WPFVideoStitch
             }
             return doubleArray;
         }
-        float[] CalculateCrossCorrelation(double[][] mfccs1, double[][] mfccs2)
+/*        float[] CalculateCrossCorrelation(double[][] mfccs1, double[][] mfccs2)
         {
-            // Convert 2D MFCC arrays into 1D arrays
-            double[] flatMfccs1 = mfccs1.SelectMany(row => row).ToArray();
+*//*            double[] flatMfccs1 = mfccs1.SelectMany(row => row).ToArray();
             double[] flatMfccs2 = mfccs2.SelectMany(row => row).ToArray();
-            float[] f1 = new float[flatMfccs1.Length];
-            float[] f2 = new float[flatMfccs2.Length];
+            //float[] f1 = new float[flatMfccs1.Length];
+            //float[] f2 = new float[flatMfccs2.Length];
+            float[] f1 = new float[5];
+            float[] f2 = new float[10];
 
-            for (int i = 0; i <flatMfccs1.Length; i++)
+
+            for (int i = 0; i < 5; i++)
+                f1[i] = (float)i + 5;
+            for( int i = 0; i < 10; i++)
+                f2[i] = (float)i + 1;*/
+/*            for (int i = 0; i <flatMfccs1.Length; i++)
             {
                 f1[i] = (float)flatMfccs1[i];
             }
             for (int i = 0; i < flatMfccs2.Length; i++)
             { 
                 f2[i] = (float)flatMfccs2[i];
-            }
+            }*//*
             
-            int n = flatMfccs1.Length + flatMfccs2.Length - 1;
-            DiscreteSignal res = Operation.CrossCorrelate(new DiscreteSignal(1,f1), new DiscreteSignal(1, f2));
-//            ShowPlot("res", f1, f2, res.Samples,1);
+            //int n = flatMfccs1.Length + flatMfccs2.Length - 1;
+            DiscreteSignal res = Operation.CrossCorrelate(new DiscreteSignal(1,f2), new DiscreteSignal(1, f1));
 
             return res.Samples;
-        }
+        }*/
 
         private void ReSetButton_Click(object sender, RoutedEventArgs e)
         {
+            firstVideoFrame.Text = "0";
+            secondVideoFrame.Text = "0";
+            secondVideoSecond.Text = "0ms";
+            firstVideoSecond.Text = "0ms";
+        }
 
+        private void OKButton_Click(object sender, RoutedEventArgs e)
+        {
+
+            frameCount = int.Parse(firstVideoFrame.Text) - int.Parse(secondVideoFrame.Text);
+            MyEvent?.Invoke(this, new MyEventArgs(frameCount));
+            this.Close();
+        }
+
+        private void CancleButton_Click(object sender, RoutedEventArgs e)
+        {
+            CloseEvent?.Invoke(this , new CloseEventArgs());
+            this.Close();
+        }
+
+        private void ApplyButton_Click(object sender, RoutedEventArgs e)
+        {
+            frameCount = int.Parse(firstVideoFrame.Text) - int.Parse(secondVideoFrame.Text);
+            MyEvent?.Invoke(this, new MyEventArgs(frameCount));
+        }
+
+        private void TextBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
+        {
+            // Check if the input is a valid number
+            if (!IsNumeric(e.Text))
+            {
+                e.Handled = true; // Mark the event as handled to prevent the input from being processed
+            }
+        }
+
+        private bool IsNumeric(string input)
+        {
+            return int.TryParse(input, out _); // Try to parse the input as an integer
+        }
+
+        private void firstVideoFrame_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (firstVideoFrame.Text == "")
+            {
+                firstVideoFrame.Text = "0";
+                firstVideoSecond.Text = "0ms";
+            }
+            else
+                firstVideoSecond.Text = ((int)(1000 / frameRate * (int.Parse(firstVideoFrame.Text)))).ToString() + "ms";
+        }
+
+        private void secondVideoFrame_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (secondVideoFrame.Text == "")
+            {
+                secondVideoFrame.Text = "0";
+                secondVideoSecond.Text = "0ms";
+            }
+            else
+                secondVideoSecond.Text = ((int)(1000 / frameRate * (int.Parse(secondVideoFrame.Text)))).ToString() + "ms";
+        }
+
+        private void GenerateAudioFiles()
+        {
+            ExtractAudioFromVideo(left, "left.wav");
+            ExtractAudioFromVideo(right, "right.wav");
+        }
+
+        private void ExtractAudioFromVideo(string videoFilePath, string outputFilePath)
+        {
+
+            if (File.Exists(outputFilePath))
+            {
+                File.Delete(outputFilePath);
+            }
+
+            string ffmpegPath = @"ffmpeg.exe";
+            //string arguments = $"-i \"{videoFilePath}\" -vn -acodec copy \"{outputFilePath}\"";
+
+            //string arguments = $"-i \"{videoFilePath}\" -ss 0 -t {totalTimeLength}s -q:a 0 \"{outputFilePath}\"";
+            string arguments = $"-i \"{videoFilePath}\" -ss 0 -t {totalTimeLength}s -q:a 0 \"{outputFilePath}\"";
+
+            var process = new System.Diagnostics.Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = ffmpegPath,
+                    Arguments = arguments,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                }
+            };
+
+            process.Start();
+            process.WaitForExit();
+        }
+
+        private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if(searchRange.Text == "") searchRange.Text = "0";
+
+            totalTimeLength = int.Parse(searchRange.Text);
+
+            System.Random random = new System.Random();
+            randomValue = random.NextDouble() + 0.5;
         }
 
         public VideoSyncronization(String left, String right)
@@ -238,10 +421,23 @@ namespace WPFVideoStitch
             InitializeComponent();
             this.left = left;
             this.right = right;
-            listView.Items.Clear();
-            //listView.Items.Add(new MyItem { Video = left, StartTime = "0", NearestFrame = "0" });
-            //listView.Items.Add(new MyItem { Video = right, StartTime = "0", NearestFrame = "0" });
+            //listView.Items.Clear();
 
+            firstVideoName.Text = System.IO.Path.GetFileName(left);
+            secondVideoName.Text = System.IO.Path.GetFileName(right);
+
+            firstVideoFrame.Text = "0";
+            secondVideoFrame.Text = "0";
+            secondVideoSecond.Text = "0ms";
+            firstVideoSecond.Text = "0ms";
+
+            stStatus.Visibility = Visibility.Collapsed;
+
+
+            using (VideoCapture videoCapture = new VideoCapture(left))
+            {
+                this.frameRate = videoCapture.Get(Emgu.CV.CvEnum.CapProp.Fps);
+            }
         }
     }
     public class MyItem

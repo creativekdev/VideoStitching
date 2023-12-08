@@ -33,17 +33,6 @@ namespace WPFVideoStitch
         {
             ThreadParameters threadParams = (ThreadParameters)obj;
 
-            /*Working working = null;
-
-
-            Application.Current.Dispatcher.Invoke(() =>
-            {
-                working = new Working
-                {
-                    Owner = this
-                };
-                working.Show();
-            });*/
             Application.Current.Dispatcher.Invoke(() =>
             {
                 pbStatus.Visibility = Visibility.Visible;
@@ -53,6 +42,8 @@ namespace WPFVideoStitch
 
 
             string command = "ffmpeg";
+//            string arguments = " -f concat -safe 0 -i videos.txt -vf \"setpts=1.0*PTS\" -c:v libx264 -crf 18 -c:a aac -b:a 192k -r 25 -c copy \"" + threadParams.outputPath + "/" + threadParams.outputFilename + "\" -report";
+
             string arguments = " -f concat -safe 0 -i videos.txt -c copy \"" + threadParams.outputPath + "/" + threadParams.outputFilename + "\"";
             var process = new Process();
 
@@ -188,7 +179,6 @@ namespace WPFVideoStitch
                     {
                         outputFilename = Path.GetFileNameWithoutExtension(item.ToString()) + "_merged" + "(" + k++ + ")" + ".mp4";
                     }
-
                 }
             }
             //outputList.Items.Clear();
@@ -210,7 +200,6 @@ namespace WPFVideoStitch
 
 
         }
-
 
         private void ListClear_Click(object sender, RoutedEventArgs e)
         {
