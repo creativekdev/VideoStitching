@@ -117,6 +117,7 @@ def verbose_stitching(stitcher, images, feature_masks=[], verbose_dir=None):
 
             tempMatches.append((m0.queryIdx, m0.trainIdx))
 
+    #creative should invert code here
 
     img_matches = cv.drawMatchesKnn(imgs[0], features[0].keypoints,imgs[1], features[1].keypoints, good_matches, None, flags=2)
     # write_verbose_result(_dir, f"03_matches_img1_to_img2.jpg", img_matches)
@@ -128,16 +129,38 @@ def verbose_stitching(stitcher, images, feature_masks=[], verbose_dir=None):
 
     src_points = np.zeros((1, len(matches_info.matches), 2), dtype=np.float32)
     dst_points = np.zeros((1, len(matches_info.matches), 2), dtype=np.float32)
+    #creative added this
+    with open('points.txt', 'w') as file:
+        pass
+    with open('bestmatches.txt', 'a') as file:
+        for i, m in enumerate(matches_info.matches):
+            p = features[0].keypoints[m.queryIdx].pt
+            p = (p[0] - features[0].img_size[0] * 0.5, p[1] - features[0].img_size[1] * 0.5)
+            src_points[0, i] = p
+            file.write(f"{p[0]} {p[1]}\n")
+            p = features[1].keypoints[m.trainIdx].pt
+            p = (p[0] - features[1].img_size[0] * 0.5, p[1] - features[1].img_size[1] * 0.5)
+            dst_points[0, i] = p
+            file.write(f"{p[0]} {p[1]}\n")
 
-    for i, m in enumerate(matches_info.matches):
-        p = features[0].keypoints[m.queryIdx].pt
-        p = (p[0] - features[0].img_size[0] * 0.5, p[1] - features[0].img_size[1] * 0.5)
-        src_points[0, i] = p
+    #creative here
 
-        p = features[1].keypoints[m.trainIdx].pt
-        p = (p[0] - features[1].img_size[0] * 0.5, p[1] - features[1].img_size[1] * 0.5)
-        dst_points[0, i] = p
-
+    points = []
+    cnt = 0
+    with open("additionalpoints.txt", 'r') as file:
+        # Read each line in the file
+        for line in file:
+            # Split the line into x and y coordinates
+            x, y = map(float, line.strip().split())
+            
+            # Create a tuple for the point and append it to the list
+            points.append((x, y))
+            if cnt % 2 == 0:
+                src_points.append((x,y))
+            else:
+                dst_points.append((x,y))
+            cnt = cnt + 1
+    #end of creative
     homographyResult = cv.findHomography(src_points, dst_points, cv.RANSAC)
 
     matches_info.H = homographyResult[0]

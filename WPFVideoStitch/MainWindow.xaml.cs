@@ -849,9 +849,13 @@ namespace WPFVideoStitch
             leftMat.Save("left.jpg");
             rightMat.Save("right.jpg");
 
+            ImageStitching imageStitching = new ImageStitching();
+            imageStitching.ShowDialog();
+
+
 /*            System.Threading.Thread preview = new System.Threading.Thread(CallStitching);
             preview.Start();*/
-
+            
             System.Threading.Thread thread = new System.Threading.Thread(GetStitchingValues);
             thread.Start();
         }
